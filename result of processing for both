@@ -1,0 +1,9 @@
+002 258,772
+002 59,347
+001 900
+003 2330,48350,1
+001 0
+002 65535,0
+
+each thing is a unit! format 1 always has type 0, format 2 always have type 1
+oh they are 16 bit numbers......
