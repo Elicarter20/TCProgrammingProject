@@ -6,7 +6,7 @@
 #include <string.h> 
 #include <unistd.h>
 #include <arpa/inet.h>
-#define PORT 8080 
+//#define PORT 8080 
 #define MAX_STRING 1024
 
 int main(int argc, char const *argv[]) 
@@ -20,11 +20,12 @@ int main(int argc, char const *argv[])
     char input_file_path[MAX_STRING];
 	strcpy(input_file_path,argv[3]);// Location of input file on same system as server
 	
-	int type_format = atoi(argv[4]);// How to translate: 0 -- no translation, 1 -- type 0 to 1 only, 2 -- type 1 to 0 only, 3 -- translate both
-
+	char type_format[MAX_STRING];
+	strcpy(type_format,argv[4]);// Location of input file on same system as server
+	
 	char target_file_path[MAX_STRING];
 	strcpy(target_file_path,argv[5]);// File name to save translation under
-	printf("\n\nclient params: %s %d %s %d %s", server_IP,server_port,input_file_path,type_format,target_file_path);
+	printf("\n\nclient params: %s %d %s %s %s", server_IP,server_port,input_file_path,type_format,target_file_path);
 
 
 	//struct sockaddr_in address; // UNUSED CODE FROM GEEKS4GEEKS
@@ -37,7 +38,7 @@ int main(int argc, char const *argv[])
         return -1; 
     } 
     printf("\nSocket:%d", sock);
-    
+
     memset(&server_addr, '0', sizeof(server_addr)); // resets server struct
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(server_port); // converts to network byte order
@@ -57,17 +58,22 @@ int main(int argc, char const *argv[])
     } 
 
     //have used server_IP AND server_port
-    send(sock, input_file_path, strlen(input_file_path), 0); //sends translation arguments
-    //send(sock, type_format, 1, 0);
-    //send(sock, target_file_path, strlen(target_file_path), 0);
+    char message[MAX_STRING];
+    strcat(message, input_file_path);
+    strcat(message, ",");
+    strcat(message, type_format);
+    strcat(message, ",");
+    strcat(message, target_file_path);
+    printf("\nFinal Message: %s\n", message);
+
+    send(sock, message, strlen(message), 0); //sends translation arguments
     printf("\nSent arguments");
+    
     int valread;
     char buffer[MAX_STRING] = {0}; 
+    
     valread = read(sock, buffer, 1024);
-    //check confirmation message
-    /*// if (valread == 0) {printf("Success");}
-    else {printf("Failure");}*/
-  	 printf("\n%s\n",buffer ); 
-    printf("\n");
-    return 0; 
+  	printf("\n%s\n",buffer ); //reads confirmation message
+    printf("Quitting...\n");
+    return 0; //quits
 } 
