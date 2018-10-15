@@ -4,7 +4,7 @@
 #include <math.h>
 
 #define SIZE 32
-#define MAX_STRING 1000
+#define MAX_STRING 1024
 
 int hex_convert(char* s)
 {
@@ -250,9 +250,9 @@ while(1)
   	}
   	else
   	{
+
   		c[0] = fgetc(fp);
-
-
+	  // printf("\n---%c",c[0]);
 
 		if (strcmp(c, " ") == 0 ||  strcmp(c,"\r")==0 || strcmp(c,"\n")==0)
 		{
@@ -273,7 +273,7 @@ while(1)
 	}
 	
 
-//	printf("\nType String: %s\n",s);	
+   // printf("\nType String: %s\n",s);	
 
 	type = type_convert(s);
 	if (type == 0)
@@ -357,9 +357,9 @@ while(1)
 		if (feof(fp))
 		{
 	 		value = ascii_convert(s);
-    	printf("%d", value);
+    	    printf("%d", value);
 	 		act_amount--;
-	  	memset(s,0,sizeof(s));
+	  	    memset(s,0,sizeof(s));
 			printf("\nReached end of file 3");
 			fputc('3', wp);	
 			fclose(fp);	//close file pointers
@@ -369,7 +369,7 @@ while(1)
 	 }
 
 	 char_counter++;
-	 //printf("\n---%c",c[0]);
+//	 printf("\n---%c",c[0]);
 	 strcat(s,c);
 	 curr++;
 
@@ -395,7 +395,7 @@ while(1)
 	 if(c[0] == 'c' ) //hOW ENTER 
 	 {
 	 	//printf("\nValue: %s\n",s);	
-	 	////printf("\nGot number: %s", s);
+	 	//printf("\nGot number: %s", s);
 	 	value = ascii_convert(s);
     printf("%d,", value);
 	 	act_amount--;
