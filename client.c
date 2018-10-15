@@ -6,6 +6,7 @@
 #include <string.h> 
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <time.h>
 //#define PORT 8080 
 #define MAX_STRING 1024
 
@@ -71,9 +72,20 @@ int main(int argc, char const *argv[])
     
     int valread;
     char buffer[MAX_STRING] = {0}; 
-    
-    valread = read(sock, buffer, 1024);
+
+while(1)
+{
+
+ valread = read(sock, buffer, 1024);
   	printf("\n%s\n",buffer ); //reads confirmation message
+  	if (strcmp(buffer,"Success")==0)
+  	{
+  		break;
+  	}
+  	 //send(sock, message, strlen(message), 0); 
+  	printf("\nRe-Sent arguments");
+  
+}
     printf("Quitting...\n");
     return 0; //quits
 } 

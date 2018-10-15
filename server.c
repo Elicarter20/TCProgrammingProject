@@ -1,15 +1,35 @@
 
-// Server side C/C++ program to demonstrate Socket programming 
 #include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include "translator.h"
 
-//#include <PracProj/reading_and_writing.c>
 //#define PORT 8080
 #define MAX_STRING 1024
+
+
+
+// -- Monday --
+//translation send and receive
+
+// -- Tuesday --
+//define application protocol!!!!!!
+//message size...send 
+
+//	Yeah maybe to initiate communication you send a 8bytes indicating the size of the message the client wants to send. 
+//But it's more than just the starter message. 
+//Maybe the protocol specifies the server sends each word one at a time. 
+//Or each word separated by an underscore.
+//Or it asks for confirmation from the server after each sent word. Or 10 words at a time 
+
+// -- Wednesday --
+// Do test cases, perfect translation
+
+
+
 
 int main(int argc, char const *argv[]) 
 { 
@@ -21,7 +41,6 @@ int main(int argc, char const *argv[])
     struct sockaddr_in this_address; 
     int addrlen = sizeof(this_address); 
 
-    char buffer[1024] = {0}; 
        
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) // creates socket file descriptor
     { 
@@ -55,6 +74,7 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE); 
     } 
 
+    char buffer[MAX_STRING] = {0}; 
 	while(1) // continously running server until Exit
 	{
    		int new_socket;
@@ -66,19 +86,32 @@ int main(int argc, char const *argv[])
         	exit(EXIT_FAILURE); 
     	} 
 
-	    char* yes = "Success";
-    	char* no = "Failure";
-    	int yay_or_nay = 0;
-
-    	// gets arguments
+		// gets arguments
    		int valread;
     	valread = read( new_socket , buffer, 1024); 
+    	
+
+	    char* yes = "Success";
+    	char* no = "Format Error";
+    	int yay_or_nay = 0;
+
     	//printf("Arguments: %s\n",buffer );
     	char c[2] = "\0";
     	char input_file_path[MAX_STRING];
     	char type_format[MAX_STRING];
     	char target_file_path[MAX_STRING];
     	int i = 0;
+
+    	//brute force remberance call....
+    /*	if (strcmp(buffer,"-1,-1,-1")!=0)
+    	{
+			memset(input_file_path,0,sizeof(input_file_path));	
+			memset(type_format,0,sizeof(type_format));	
+			memset(target_file_path,0,sizeof(target_file_path));	
+    	}*/
+
+
+
      	for (; i < strlen(buffer); i++) // gets input file path
      	{
      		c[0] = buffer[i];
@@ -99,25 +132,43 @@ int main(int argc, char const *argv[])
 
 
      	//printf("%s\n",input_file_path); //read this file 
-     	//printf("%s\n",type_format); 	// determins translation
-     	//printf("%s\n",target_file_path); // write to this file
+     	//printf("Test: %s\n",type_format); 	// determins translation
+        //printf("%s\n",target_file_path); // write to this file
 
     	// do translation
-
+     	char* t = trans(input_file_path,type_format,target_file_path);
+     	printf("Function Return: %s\n", t);
     	//send confirmation
  	  	if (strcmp(type_format,"0")==0)
  	  	{ 	
  	  		send(new_socket , yes , strlen(yes) , 0 ); 
+ 	  	    	printf("Sent Confirmation \n"); 
+
  	  	}
  	  	else
  	  	{ 	
  	  		send(new_socket , no , strlen(no) , 0 ); 
+ 		   	printf("Sent Rejection \n"); 
+
  	  	}
 
+
     	//close this client connection
+    	//SEND THE TRANSLATION
     	
     	//do write
-    	printf("Sent Confirmation \n"); 
+
+    	printf("Closed Client Conncetion\n"); 
+
+
+	
+		memset(input_file_path,0,sizeof(input_file_path));	
+		memset(type_format,0,sizeof(type_format));	
+		memset(target_file_path,0,sizeof(target_file_path));	
+    	memset(buffer,0,sizeof(buffer));
+    	memset(t,0,sizeof(t));	
+	
+
     }    
     printf("\nClosing server");
     return 0; 
