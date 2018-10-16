@@ -32,6 +32,6 @@
 #define SWAP_FORMATS 3
 #define OUTPUT_FOLDER "../testData/";
 
-char* trans(char* input, char* tf, char* target);
+char* control(char* input, char* tf, char* target);
 
 #endif /* TRANSLATOR_H */

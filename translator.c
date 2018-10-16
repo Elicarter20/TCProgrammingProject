@@ -7,6 +7,12 @@
 #define SIZE 32
 #define MAX_STRING 1024
 
+
+//if 0 do no translation!
+//if 1 , tranlsate only type 0s
+//if 2, translate only type 1s
+//if 3, translate both
+
 int hex_convert(char* s)
 {
   //printf("\nValue Input: %s\n", s);
@@ -369,7 +375,7 @@ while(1)
 		{
 	 		value = ascii_convert(s);
     	    printf("%d", value);
-    	      sprintf(append,"%d",value); // put the int into a string
+			sprintf(append,"%d",value); // put the int into a string
     		strcat(ret, append);
 			//strcat(ret, " ");
 	 		act_amount--;
@@ -480,3 +486,14 @@ while(1)
 */
 }
 
+
+
+char* control(char* input,  char* tf, char* target) {
+	printf("In control: %s\n",tf);
+	if (strcmp(tf,"1")==0 || strcmp(tf,"2")==0 ||strcmp(tf,"3")==0 )
+	{
+		return trans(input, tf,target);
+	}
+	static char result[MAX_STRING]="original string";
+	return result;
+}

@@ -14,10 +14,13 @@
 
 // -- Monday --
 //translation send and receive
+// send status and message, now just reformat
+// fix the typing tranlsation!
 
 // -- Tuesday --
 //define application protocol!!!!!!
 //message size...send 
+//send preliminary message, and how subsequent messages sent
 
 //	Yeah maybe to initiate communication you send a 8bytes indicating the size of the message the client wants to send. 
 //But it's more than just the starter message. 
@@ -88,12 +91,10 @@ int main(int argc, char const *argv[])
 
 		// gets arguments
    		int valread;
-    	valread = read( new_socket , buffer, 1024); 
+    	valread = read( new_socket , buffer, MAX_STRING); 
     	
 
-	    char* yes = "Success";
-    	char* no = "Format Error";
-    	int yay_or_nay = 0;
+
 
     	//printf("Arguments: %s\n",buffer );
     	char c[2] = "\0";
@@ -136,13 +137,16 @@ int main(int argc, char const *argv[])
         //printf("%s\n",target_file_path); // write to this file
 
     	// do translation
-     	char* t = trans(input_file_path,type_format,target_file_path);
+     	char* t = control(input_file_path,type_format,target_file_path);
      	printf("Function Return: %s\n", t);
     	//send confirmation
- 	  	if (strcmp(type_format,"0")==0)
+ 	/*  	if (strcmp(type_format,"0")==0)
  	  	{ 	
- 	  		send(new_socket , yes , strlen(yes) , 0 ); 
- 	  	    	printf("Sent Confirmation \n"); 
+			send(new_socket , yes, strlen(yes) , 0 ); 
+			//send(new_socket , '\x2', 1 , 0 ); 
+
+ 	  		send(new_socket , t, strlen(t) , 0 ); 
+ 	  	    printf("Sent Confirmation \n"); 
 
  	  	}
  	  	else
@@ -150,13 +154,52 @@ int main(int argc, char const *argv[])
  	  		send(new_socket , no , strlen(no) , 0 ); 
  		   	printf("Sent Rejection \n"); 
 
+ 	  	}*/
+
+ 	  	int n;
+ 	  	char delim = '\x2';
+		n = write(new_socket, &delim, 1);
+		if (n < 0) perror("ERROR writing to socket");
+
+		if (strcmp(type_format,"1")==0 || strcmp(type_format,"2")==0 ||strcmp(type_format,"3")==0 )
+ 	  	{ 	
+ 	  		char* ys  = "0";
+			n = write(new_socket, ys, 1);
+			if (n < 0) perror("ERROR writing to socket");
+		 	printf("Sent Confirmation \n"); 
+			delim = '\x3';
+			n = write(new_socket, &delim, 1);
+			if (n < 0) perror("ERROR writing to socket");
+
+ 	  	}
+ 	  	else
+ 	  	{ 	
+ 	  		char* not = "1";
+			n = write(new_socket, not, 1);
+			if (n < 0) perror("ERROR writing to socket");
+		 	printf("Sent Rejection \n"); 
+		 	delim = '\x3';
+			n = write(new_socket, &delim, 1);
+			if (n < 0) perror("ERROR writing to socket");
+
+			memset(input_file_path,0,sizeof(input_file_path));	
+			memset(type_format,0,sizeof(type_format));	
+			memset(target_file_path,0,sizeof(target_file_path));	
+    		memset(buffer,0,sizeof(buffer));
+    		memset(t,0,sizeof(t));	
+		 	continue;
  	  	}
 
 
-    	//close this client connection
-    	//SEND THE TRANSLATION
-    	
-    	//do write
+		for (int in = 0; in < strlen(t); in++)
+		{
+			n = write(new_socket,&t[in],1);
+			if (n < 0) perror("ERROR writing to socket");
+		}
+		
+		delim = '\x4';
+		n = write(new_socket, &delim, 1);
+		if (n < 0) perror("ERROR writing to socket");
 
     	printf("Closed Client Conncetion\n"); 
 

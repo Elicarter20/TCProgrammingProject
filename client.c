@@ -22,7 +22,7 @@ int main(int argc, char const *argv[])
 	strcpy(input_file_path,argv[3]);// Location of input file on same system as server
 	
 	char type_format[MAX_STRING];
-	strcpy(type_format,argv[4]);// Location of input file on same system as server
+	strcpy(type_format,argv[4]);// Location of inpzxut file on same system as server
 	
 	char target_file_path[MAX_STRING];
 	strcpy(target_file_path,argv[5]);// File name to save translation under
@@ -68,24 +68,79 @@ int main(int argc, char const *argv[])
     printf("\nFinal Message: %s\n", message);
 
     send(sock, message, strlen(message), 0); //sends translation arguments
-    printf("\nSent arguments");
+    printf("\nSent arguments\n");
     
     int valread;
     char buffer[MAX_STRING] = {0}; 
 
-while(1)
-{
+    //read socket
+    //first message will be confirmation 
+    //check for delimeter
+    //second message will be content
+    //
+    char tmp;
+    int index;
+    int n;
+    while(1)
+    {
+    	n = read(sock,&tmp,1);
+    	if (n<0) {perror("ERROR reading from socket");}
+    	if (tmp != '\x2')
+    	{
+    		//prevents furhtering of client until get confirmation
+    		continue;
+    	}
+    	index=0;
+    	while(1)
+    	{
+    		n =read(sock, &tmp, 1);
+    		if (n<0){ perror("ERROR reading from socket");}
+    		//printf("curr: %c\n",tmp);
+  			if (tmp == '\x3')
+            	break;
+        	// TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
+        	buffer[index] = tmp;
+        	index++;
+    	}
+		printf("Status: %s\n", buffer);
+		if (strcmp(buffer,"1")==0)
+		{
+			printf("Translation failed");
+			exit(0);
+		}
+		index = 0;
+		memset(buffer,0,sizeof(buffer));
+		while(1)
+    	{
+    		n =read(sock, &tmp, 1);
+    		//printf("curr: %c\n",tmp);
+    		if (n<0){ perror("ERROR reading from socket");}
+  			if (tmp == '\x4') break;
+        	// TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
+			//printf("Message: %s\n", buffer);
 
- valread = read(sock, buffer, 1024);
-  	printf("\n%s\n",buffer ); //reads confirmation message
+        	buffer[index] = tmp;
+        	index++;
+    	}
+		printf("Message: %s\n", buffer);
+    	break;
+    }
+
+
+  /*  valread = read(sock, buffer, MAX_STRING);
+  	printf("\nConfirmation: %s\n",buffer ); //reads confirmation message
   	if (strcmp(buffer,"Success")==0)
   	{
-  		break;
-  	}
-  	 //send(sock, message, strlen(message), 0); 
-  	printf("\nRe-Sent arguments");
-  
-}
+  		while(1)
+  		{
+		    valread = read(sock, buffer, MAX_STRING);
+  			printf("\nContent: %s\n",buffer ); //reads confirmation message
+    		memset(buffer,0,sizeof(buffer));
+
+  		}
+
+  	}*/
+  	
     printf("Quitting...\n");
     return 0; //quits
 } 
