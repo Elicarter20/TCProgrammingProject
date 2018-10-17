@@ -502,9 +502,82 @@ while(1)
 
 
 
+char* ToTypeZero(char* set)
+{
+	printf("TypeZero!: %s\n\n", set);
+	static char result[MAX_STRING]="Type 0 string";
+	return result;
+}
+
+char* ToTypeOne(char* set)
+{
+	printf("TypeOne!: %s\n\n", set);
+	static char result[MAX_STRING]="Type 1 string";
+	return result;
+}
+
+char* type(char* values, char* tf)
+{
+	//printf("Values Argument: %s\n", values);
+	static char result[MAX_STRING]="";
+	char append[MAX_STRING] = "";
+	char c[2] = "\0";
+	if (strcmp(tf,"3")==0)
+	{	
+		int i = 0; // index of string
+		int cross_sec = i; 
+		while(1)
+		{
+			if(values[i] == '\x2')
+			{
+				//printf("Start of value: %c\n", values[i+1]);
+				i++;
+				cross_sec = i;
+				while(1)
+				{
+					if (values[cross_sec] == '\x3')
+					{
+						if (append[0] == '0')
+						{
+							printf("Doing type 0->1 conversion\n");
+							char* done = ToTypeOne(append);
+						}
+						if (append[0] == '1')
+						{
+							printf("Doing type 1->0 conversion\n");
+							char* done = ToTypeZero(append);
+						}
+						//printf("End of value: %c\n", values[cross_sec-1]);
+						i = cross_sec;
+						break;
+					}
+					c[0] = values[cross_sec];
+					//printf("%c\n", values[cross_sec]);
+					strcat(append, c);
+					cross_sec++;
+				}
+			}
+			//printf("End of value: %c\n", values[i-1]);
+			if(values[i]=='\x4')
+			{
+				printf("End of arg.\n");
+				break;
+			}
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			i++;
+		}
+	}
+	return result;
+}
+
 char* control(char* input,  char* tf, char* target) 
 {
+	static char result[MAX_STRING]="copy original file";
 	printf("In control: %s\n",tf);
+	if (strcmp(tf,"0")==0){
+		return result;
+	}	
 	if (strcmp(tf,"1")==0){
 		return trans(input, tf,target);
 	}
@@ -515,12 +588,17 @@ char* control(char* input,  char* tf, char* target)
 	if (strcmp(tf,"3")==0){
 		return trans(input, tf,target);
 	}	
-	static char result[MAX_STRING]="original string";
-	return result;
 }
 
 int check_file(char* input_file)
 {
-	return 0;
-
+	if( access( input_file, F_OK ) != -1 ) 
+	{
+    	printf("// file exists\n");
+    	return 0;
+	} 
+	else {
+    	printf("// file doesn't exist");
+    	return 1;
+	}
 }

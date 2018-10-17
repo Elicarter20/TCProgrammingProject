@@ -103,15 +103,6 @@ int main(int argc, char const *argv[])
     	char target_file_path[MAX_STRING];
     	int i = 0;
 
-    	//brute force remberance call....
-    /*	if (strcmp(buffer,"-1,-1,-1")!=0)
-    	{
-			memset(input_file_path,0,sizeof(input_file_path));	
-			memset(type_format,0,sizeof(type_format));	
-			memset(target_file_path,0,sizeof(target_file_path));	
-    	}*/
-
-
 
      	for (; i < strlen(buffer); i++) // gets input file path
      	{

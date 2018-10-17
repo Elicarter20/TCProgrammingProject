@@ -34,5 +34,6 @@
 
 char* control(char* input, char* tf, char* target);
 int check_file(char* input);
+char* type(char* values, char* tf);
 
 #endif /* TRANSLATOR_H */
