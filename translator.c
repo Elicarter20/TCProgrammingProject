@@ -14,7 +14,10 @@
 //if 3, translate both
 // (\x2)01,225,39(\x3)(\x2)11,24(\x3)(\x4)
 
-
+//1.) do writing! with perfect case DONE!
+//2.) do file checking (ex. check if ascii is greater than  2147483647 (check atoi of value!))
+		// ^^^ IS VERY HARD DO LATER!!!
+//3.) then do server client fixes new delimeters!
 
 int hex_convert(char* s)
 {
@@ -273,7 +276,7 @@ while(1)
 
 			fclose(fp);	//close file pointers
 		//	printf("\nBUFFER: %s\n: ", ret);
-			printf("\nWrote successfully\n");
+			//printf("\nWrote successfully\n");
 	 		return ret;
 	 }
 	 	strcat(s,c);
@@ -282,7 +285,7 @@ while(1)
 	}
 	
 
-   printf("\nType String: %s\n",s);	
+   //printf("\nType String: %s\n",s);	
 
 	type = type_convert(s);
 	if (type == 0)
@@ -311,7 +314,7 @@ while(1)
 			strcat(ret,"\x4");
 			fclose(fp);	//close file pointers
 		//printf("\nBUFFER: %s\n: ", ret);
-			printf("\nWrote successfully\n");
+		//	printf("\nWrote successfully\n");
 		 	return ret;
 	 }
 	 	strcat(s,c);
@@ -382,7 +385,7 @@ while(1)
 			printf("\nReached end of file 3");
 			fclose(fp);	//close file pointers
 			//printf("\nBUFFER:\n %s\n: ", ret);
-			printf("\nWrote successfully\n");
+		//	printf("\nWrote successfully\n");
 	 		return ret;
 	 }
 
@@ -423,9 +426,9 @@ while(1)
 	{
 	 if(c[0] == 'c' ) //hOW ENTER 
 	 {
-	 	printf("\nGot number: %s", s);
+	 	// printf("\nGot number: %s", s);
 	 	value = ascii_convert(s);
-	 	  printf("\nConverted: %d", value);
+	 // printf("\nConverted: %d", value);
     	//printf("%d,", value);
       sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
@@ -433,7 +436,7 @@ while(1)
 
 	 	act_amount--;
 	  memset(s,0,sizeof(s));	//resets string
-	 	printf("\nAmount: %d", act_amount);
+	 	//printf("\nAmount: %d", act_amount);
 	 }
 	 if (c[0] == '0'  && s[strlen(s)-2] != '3')
 	 {
@@ -953,9 +956,8 @@ char* ToTypeOne(char* set)
 
 char* change_type(char* values, char* tf)
 {
-	printf("\nValues Argument: %s\n\n", values);
+//	printf("\nValues Argument: %s\n\n", values);
 	static char result[MAX_STRING]="";
-	strcat(result, "\x2");//starting delimeter
 	char append[MAX_STRING] = "";
 	char c[2] = "\0";
 	if (strcmp(tf,"3")==0)
@@ -978,15 +980,21 @@ char* change_type(char* values, char* tf)
 						if (append[0] == '0')
 						{
 							//printf("Doing type 0->1 conversion\n");
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeOne(append);
-							printf("Type 0->1 result: %s\n", done);
+							//printf("Type 0->1 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");
 							memset(done,0,sizeof(done));	
 						}
 						if (append[0] == '1')
 						{
 							//printf("Doing type 1->0 conversion\n");
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeZero(append);
-							printf("Type 1->0 result: %s\n", done);
+							//printf("Type 1->0 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");
 							memset(done,0,sizeof(done));	
 
 						}
@@ -1003,7 +1011,7 @@ char* change_type(char* values, char* tf)
 			//printf("End of value: %c\n", values[i-1]);
 			if(values[i]=='\x4')
 			{
-				printf("End of arg.\n");
+				//printf("End of arg.\n");
 				break;
 			}
 			memset(append,0,sizeof(append));	
@@ -1032,15 +1040,21 @@ char* change_type(char* values, char* tf)
 						if (append[0] == '0')
 						{
 							//printf("Doing type 0->1 conversion\n");
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeZero(append);
-							printf("Type 0->0 result: %s\n", done);
+							//printf("Type 0->0 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");
 							memset(done,0,sizeof(done));	
 						}
 						if (append[0] == '1')
 						{
 							//printf("	Doing type 1->0 conversion: %s\n", append);
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeZero(append);
-							printf("Type 1->0 result: %s\n", done);
+							//printf("Type 1->0 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");							
 							memset(done,0,sizeof(done));	
 
 						}
@@ -1085,15 +1099,21 @@ char* change_type(char* values, char* tf)
 						if (append[0] == '0')
 						{
 							//printf("Doing type 0->1 conversion: %s\n", append);
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeOne(append);
-							printf("Type 0->1 result: %s\n", done);
+							//printf("Type 0->1 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");							
 							memset(done,0,sizeof(done));	
 						}
 						if (append[0] == '1')
 						{
 							//printf("Doing type 1->0 conversion\n");
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeOne(append);
-							printf("Type 1->1 result: %s\n", done);
+							//printf("Type 1->1 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");
 							memset(done,0,sizeof(done));	
 
 						}
@@ -1138,15 +1158,21 @@ char* change_type(char* values, char* tf)
 						if (append[0] == '0')
 						{
 							//printf("Doing type 0->1 conversion\n");
+							strcat(result, "\x2");//starting delimeter
 							char* done = ToTypeZero(append);
-							printf("Type 0->0 result: %s\n", done);
+							//printf("Type 0->0 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");							
 							memset(done,0,sizeof(done));	
 						}
 						if (append[0] == '1')
 						{
 							//printf("Doing type 1->0 conversion\n");
+							strcat(result, "\x2");//starting delimeter	
 							char* done = ToTypeOne(append);
-							printf("Type 1->1 result: %s\n", done);
+							//printf("Type 1->1 result: %s\n", done);
+							strcat(result, done);
+							strcat(result, "\x3");							
 							memset(done,0,sizeof(done));	
 
 						}
@@ -1171,18 +1197,148 @@ char* change_type(char* values, char* tf)
 			i++;
 		}
 	}
+	strcat(result, "\x4");
 	return result;
 }
 
+
 int check_file(char* input_file)
 {
+	char append[MAX_STRING] = "";
+	char c[2] = "\0";
+	int i = 0;
+	FILE* fp;
+	fp = fopen(input_file, "r");
+	c[0] = fgetc(fp);
+	if (c[0]!='0')
+	{
+		printf("Incorrect pre-0 at type\n");
+		return 1;
+	}
+
+	int get_type = 0;
+	int get_amount = 1;
+	int zero_or_one;  // zero -- 0 , one -- 1
+	int amount_chars; // chars for amount
+	int even_odd = 2;
 	if( access( input_file, F_OK ) != -1 ) 
 	{
-    	printf("// file exists\n");
+		while(1) 
+		{ 
+			c[0] = fgetc(fp); // if here then should get type correctly
+	 		if (feof(fp)){break;}
+	 		if (get_type == 0)
+	 		{
+	 			if (c[0]=='0')
+	 			{
+	 				zero_or_one = 0;
+	 				amount_chars = 2;
+	 			}
+	 			if (c[0]=='1')
+	 			{
+	 				zero_or_one = 1;
+	 				amount_chars= 6;
+	 				even_odd = 0;
+	 			}
+	 			get_type = 1;
+	 			get_amount = 0;
+	 			//printf("Type is: %d\n", zero_or_one);
+	 			continue;
+	 		}
+	 		if (get_amount == 0)
+	 		{
+				//printf("%c %d\n", c[0], even_odd);
+	 			//printf("%d\n", even_odd);
+	 			if (amount_chars == 0)
+	 			{
+	 				get_amount = 1;
+	 				even_odd = 2;
+	 				//printf("Got amount!");
+	 				continue;
+	 			}
+	 			if (even_odd == 2) // for HEX for type 0
+	 			{
+	 				if(c[0]!='0' && c[0]!='1' &&  c[0]!='2' &&  c[0]!='3' &&  c[0]!='4' 
+	 					&& c[0]!='5' && c[0]!='6' && c[0]!='7' && c[0]!='8'
+	 					 && c[0]!='9' && c[0]!='a' && c[0]!='b'&& c[0]!='c'
+	 					  && c[0]!='d' && c[0]!='e'&& c[0]!='f')
+	 				{
+	 					//printf("Here");
+	 					return 1;
+	 				}
+	 				amount_chars--;
+	 				continue;
+	 			}
+	 			if (even_odd == 0)// FOR ASCII type 1
+	 			{
+	 				if(c[0]!='3')
+	 				{
+	 					//printf("there");
+	 					return 1;
+	 				}
+	 				even_odd = 1;
+	 				amount_chars--;
+	 				continue;
+	 			}
+	 			if (even_odd == 1) // FOR ASCII type 1
+	 			{
+	 				if(c[0]!='0' && c[0]!='1' &&  c[0]!='2'  &&  c[0]!='3' 
+	 				  &&  c[0]!='4'  &&  c[0]!='5' && c[0]!='6' && c[0]!='7'  
+	 				  && c[0]!='8'  && c[0]!='9')
+	 				{
+	 					//printf("OR?");
+	 					return 1;
+	 				}
+	 				even_odd = 0;
+	 				amount_chars--;
+	 				continue;
+	 			}
+	 			
+				//printf("%d\n", amount_chars);
+	 		}
+	 		//break;
+			//printf("%s ", c);
+	 	}
+	 	memset(append,0,sizeof(append));	
+	 	memset(c,0,sizeof(c));	
     	return 0;
 	} 
-	else {
-    	printf("// file doesn't exist");
+	else 
+	{
+		fclose(fp);
+		memset(c,0,sizeof(c));	
     	return 1;
 	}
+}
+
+int do_write(char* trans, char* target)
+{
+	char c[2] = "\0";
+	//printf("Doing write of: %s\n", trans);
+	int i = 0;
+	FILE* wp;
+	wp = fopen(target, "w+");
+	while(1)
+	{
+		c[0] = trans[i];
+		i++;
+		if(strcmp(c,"\x2")==0)
+		{
+			//printf("Start of value\n");
+			continue;
+		}
+		if(strcmp(c,"\x3")==0)
+		{
+			//printf("End of value\n");
+			continue;
+		}
+		if(strcmp(c,"\x4")==0)
+		{
+			printf("\nWrote.\n");
+			break;
+		}
+		fputc(c[0], wp);	
+	}
+	fclose(wp);
+	return 0;
 }

@@ -35,6 +35,6 @@
 char* get_values(char* input);
 int check_file(char* input);
 char* change_type(char* values, char* tf);
-
+int do_write(char* trans, char* target);
 
 #endif /* TRANSLATOR_H */
