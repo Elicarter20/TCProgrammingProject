@@ -138,7 +138,7 @@ int main(int argc, char const *argv[])
 
     	// do translation
      	char* t = control(input_file_path,type_format,target_file_path);
-     	printf("Function Return: %s\n", t);
+     	printf("Function Return->%s\n", t);
     	//send confirmation
  	/*  	if (strcmp(type_format,"0")==0)
  	  	{ 	
@@ -161,42 +161,135 @@ int main(int argc, char const *argv[])
 		n = write(new_socket, &delim, 1);
 		if (n < 0) perror("ERROR writing to socket");
 
-		if (strcmp(type_format,"1")==0 || strcmp(type_format,"2")==0 ||strcmp(type_format,"3")==0 )
- 	  	{ 	
- 	  		char* ys  = "0";
-			n = write(new_socket, ys, 1);
+		int m = check_file(input_file_path);
+		if(m==0)
+		{
+			char* confirm = "0";
+			n = write(new_socket,confirm,1);
 			if (n < 0) perror("ERROR writing to socket");
-		 	printf("Sent Confirmation \n"); 
+			printf("Sent Confirmation \n"); 
 			delim = '\x3';
 			n = write(new_socket, &delim, 1);
 			if (n < 0) perror("ERROR writing to socket");
 
- 	  	}
+		}
  	  	else
  	  	{ 	
- 	  		char* not = "1";
-			n = write(new_socket, not, 1);
+ 	  		char* reject = "1";
+			n = write(new_socket, reject, 1);
 			if (n < 0) perror("ERROR writing to socket");
 		 	printf("Sent Rejection \n"); 
 		 	delim = '\x3';
 			n = write(new_socket, &delim, 1);
 			if (n < 0) perror("ERROR writing to socket");
-
 			memset(input_file_path,0,sizeof(input_file_path));	
 			memset(type_format,0,sizeof(type_format));	
 			memset(target_file_path,0,sizeof(target_file_path));	
     		memset(buffer,0,sizeof(buffer));
     		memset(t,0,sizeof(t));	
-		 	continue;
+		 	continue;//accept new client
  	  	}
 
 
-		for (int in = 0; in < strlen(t); in++)
-		{
-			n = write(new_socket,&t[in],1);
-			if (n < 0) perror("ERROR writing to socket");
-		}
-		
+ 	  	printf("\nType Call: %s\n",type_format);
+ 	  	int out  = 0;
+ 	  	int inner = out;
+ 	  	int get_type = 0;
+
+
+ 	  	FILE *fp;
+ 		FILE *wp;
+  		char cr;	
+  		printf("%s\n",input_file_path); //read this file 
+     	printf("Type: %s\n",type_format); 	// determins translation
+        printf("%s\n",target_file_path); // write to this file
+		fp = fopen(input_file_path, "r");
+		wp = fopen(target_file_path, "w+");
+ 	  	while(1)
+ 	  	{
+ 	  		if (strcmp(type_format,"0")==0)
+ 	  		{
+ 	  			//printf("starting acknowledgements: \n");
+				if(t[out] == '\x2')//assumes will have \x2 at start
+ 	  			{
+					n = write(new_socket,&t[out],1);
+ 	  				inner = out+1;
+ 	  				while(1)
+ 	  				{
+ 	  					if (get_type==0)
+ 	  					{
+							printf("\nType: %c |  Func: %s\n", t[inner], type_format);
+ 	  						if(t[inner]=='0' && (strcmp(type_format,"2")==0))//) || strcmp(type_format,"1")!=0))
+ 	  						{	
+ 	  							while(1)
+ 	  							{
+ 	  								if (t[inner]=='\x3')
+ 	  								{
+ 	  									break;
+ 	  								}
+ 	  								inner++;	
+ 	  							}
+ 	  						}
+ 	  						if(t[inner]=='1' && (strcmp(type_format,"1")==0))//|| strcmp(type_format,"3")!=0))
+ 	  						{	
+ 	  							while(1)
+ 	  							{
+ 	  								if (t[inner]=='\x3')
+ 	  								{
+ 	  									break;
+ 	  								}
+ 	  								inner++;	
+ 	  							}
+ 	  						}
+ 	  						get_type=1;
+ 	  					}
+ 	  					else
+ 	  					{
+ 		  					if(t[inner] == '\x3') // assumes all will have \x3 line ending
+	 	  					{
+								n = write(new_socket,&t[inner],1);
+								if (n < 0) perror("ERROR writing to socket");	
+ 	  							break;
+ 	  						}
+ 	  						//printf("curr->%c\n",t[inner]);
+ 	  			 			n = write(new_socket,&t[inner],1);
+							if (n < 0) perror("ERROR writing to socket");
+							inner++;
+						}
+ 	  				}
+ 	  			}
+ 	  			get_type = 0;
+ 	  			out = inner + 1;
+ 	  			if(t[out]=='\x4')
+ 	  			{
+
+ 	  				break;
+ 	  			}
+ 	  		}
+ 	  		else
+ 	  		{
+ 	  			 	  			printf("Wrote successfully\n");
+
+ 	  			break;
+ 	  				
+  					while(1) { 
+	 					cr = fgetc(fp);
+	 					if (feof(fp)){
+							break;
+	 					}
+	 					n = write(new_socket,&cr,1);
+						if (n < 0) perror("ERROR writing to socket");	
+ 	  							
+ 					//printf("%c", c);
+					fputc(cr, wp);	
+  					}
+				   fclose(fp);
+  					fclose(wp);
+  					printf("Wrote successfully\n");
+					break;
+ 	  		}
+ 	  	}
+
 		delim = '\x4';
 		n = write(new_socket, &delim, 1);
 		if (n < 0) perror("ERROR writing to socket");

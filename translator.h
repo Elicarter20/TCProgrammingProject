@@ -33,5 +33,6 @@
 #define OUTPUT_FOLDER "../testData/";
 
 char* control(char* input, char* tf, char* target);
+int check_file(char* input);
 
 #endif /* TRANSLATOR_H */

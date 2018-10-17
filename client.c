@@ -22,7 +22,7 @@ int main(int argc, char const *argv[])
 	strcpy(input_file_path,argv[3]);// Location of input file on same system as server
 	
 	char type_format[MAX_STRING];
-	strcpy(type_format,argv[4]);// Location of inpzxut file on same system as server
+	strcpy(type_format,argv[4]);// Location of input file on same system as server
 	
 	char target_file_path[MAX_STRING];
 	strcpy(target_file_path,argv[5]);// File name to save translation under
@@ -93,7 +93,7 @@ int main(int argc, char const *argv[])
     	index=0;
     	while(1)
     	{
-    		n =read(sock, &tmp, 1);
+	   		n =read(sock, &tmp, 1);
     		if (n<0){ perror("ERROR reading from socket");}
     		//printf("curr: %c\n",tmp);
   			if (tmp == '\x3')
@@ -118,29 +118,42 @@ int main(int argc, char const *argv[])
   			if (tmp == '\x4') break;
         	// TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
 			//printf("Message: %s\n", buffer);
-
         	buffer[index] = tmp;
         	index++;
     	}
-		printf("Message: %s\n", buffer);
     	break;
     }
+	printf("Final Message: %s\n\n", buffer);
+	printf("Format: %s\n",type_format);
+	if (strcmp(type_format, "0")==0)
+	{
+		printf("Final Message: %s\n\n", buffer);
+	}
+	else
+	{
+	for (int tint = 0; tint < strlen(buffer); tint++)
+	{
+		if (buffer[tint] == '\x2')
+		{
+			tint = tint+2;//skips delimeter and type
+			printf("%c ", buffer[tint]);//prints amount
+			tint++;
+			continue;
+		}
+		if(buffer[tint]==',')
+		{
+			printf(",");
+			continue;
+		}
+		if (buffer[tint] == '\x3')
+		{
+			printf("\n");
+			continue;
+		}
+		printf("%c",buffer[tint]);
 
-
-  /*  valread = read(sock, buffer, MAX_STRING);
-  	printf("\nConfirmation: %s\n",buffer ); //reads confirmation message
-  	if (strcmp(buffer,"Success")==0)
-  	{
-  		while(1)
-  		{
-		    valread = read(sock, buffer, MAX_STRING);
-  			printf("\nContent: %s\n",buffer ); //reads confirmation message
-    		memset(buffer,0,sizeof(buffer));
-
-  		}
-
-  	}*/
-  	
+	}
+}
     printf("Quitting...\n");
     return 0; //quits
 } 

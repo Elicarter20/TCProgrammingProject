@@ -8,10 +8,13 @@
 #define MAX_STRING 1024
 
 
-//if 0 do no translation!
-//if 1 , tranlsate only type 0s
+//if 0, do no translation!
+//if 1, tranlsate only type 0s
 //if 2, translate only type 1s
 //if 3, translate both
+// (\x2)01,225,39(\x3)(\x2)11,24(\x3)(\x4)
+
+
 
 int hex_convert(char* s)
 {
@@ -223,7 +226,7 @@ char* trans(char* input,  char* tf, char* target) {
 	// open file and read file
 	//int t = bin_test();
     
-    printf("Arguments: %s %s %s\n",input,tf,target );
+    printf("Arguments: %s %s %s \n",input,tf,target );
 	FILE *fp;
 	FILE *wp;
 	char s[MAX_STRING] = "";
@@ -242,6 +245,7 @@ char* trans(char* input,  char* tf, char* target) {
 
 while(1)
 {
+	strcat(ret,"\x2"); // start delimeter for result
 	while (type_counter>0)
 	{
 		if (ascii_reset == 0)
@@ -271,6 +275,9 @@ while(1)
 		if (feof(fp)){
 			printf("\nReached end of file 1");
 			fputc('1', wp);	
+			strcat(ret,"\x3");
+			strcat(ret,"\x4");
+			memset(s,0,sizeof(s));
 
 			fclose(fp);	//close file pointers
 			fclose(wp);
@@ -294,7 +301,7 @@ while(1)
 		num_counter = 4;
 		hex_ascii_switch = 0;
 	}
-	else
+	if (type == 1)
 	{
 		amount = 6;
 		hex_ascii_switch = 1;
@@ -312,9 +319,12 @@ while(1)
 		if (feof(fp)){
 			printf("\nReached end of file 2");
 			fputc('2', wp);	
+			memset(s,0,sizeof(s));
+			strcat(ret,"\x3");
 
-		fclose(fp);	//close file pointers
-		fclose(wp);
+			strcat(ret,"\x4");
+			fclose(fp);	//close file pointers
+			fclose(wp);
 		//printf("\nBUFFER: %s\n: ", ret);
 
 		printf("\nWrote successfully\n");
@@ -339,8 +349,11 @@ while(1)
 	}
 
   //printf("\nActual Amount: %d\n", act_amount);
-  printf("\n 0%d ", act_amount);	
-  sprintf(append,"%d",act_amount); // put the int into a string
+    printf("\n 0%d ", act_amount);	
+    sprintf(append,"%d",type); // put the int into a string
+    strcat(ret, append);
+    //strcat(ret, "-");
+    sprintf(append,"%d",act_amount); // put the int into a string
     strcat(ret, append);
     strcat(ret, ",");
 
@@ -377,7 +390,8 @@ while(1)
     	    printf("%d", value);
 			sprintf(append,"%d",value); // put the int into a string
     		strcat(ret, append);
-			//strcat(ret, " ");
+    		strcat(ret,"\x3"); // end delimeter for result
+			strcat(ret,"\x4"); // end delimeter for all output
 	 		act_amount--;
 	  	    memset(s,0,sizeof(s));
 			printf("\nReached end of file 3");
@@ -405,13 +419,13 @@ while(1)
 	 //	printf("\nValue: %s\n",s);	
 		value = hex_convert(s);
 	 	printf("%d,", value);
-  sprintf(append,"%d",value); // put the int into a string
+  		sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
 	 	char_counter = 0;   // reset counter
 	 	act_amount--;        // decrese number amount
 	 	if(act_amount==0)
 	 	{
-	 		strcat(ret," ");
+	 		strcat(ret,"\x3");
 	 	}
 	 	else
 	 	{
@@ -429,7 +443,7 @@ while(1)
 	 	//printf("\nValue: %s\n",s);	
 	 	//printf("\nGot number: %s", s);
 	 	value = ascii_convert(s);
-    printf("%d,", value);
+    	printf("%d,", value);
       sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
 		strcat(ret, ",");
@@ -466,7 +480,7 @@ while(1)
     	printf("%d", value);
     	  sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
-		strcat(ret, " ");
+		strcat(ret, "\x3");
 	 	act_amount--;
 	  memset(s,0,sizeof(s));	
 	  //printf("\nEnd of ASCII\n");
@@ -488,12 +502,25 @@ while(1)
 
 
 
-char* control(char* input,  char* tf, char* target) {
+char* control(char* input,  char* tf, char* target) 
+{
 	printf("In control: %s\n",tf);
-	if (strcmp(tf,"1")==0 || strcmp(tf,"2")==0 ||strcmp(tf,"3")==0 )
+	if (strcmp(tf,"1")==0){
+		return trans(input, tf,target);
+	}
+	if (strcmp(tf,"2")==0)
 	{
 		return trans(input, tf,target);
 	}
+	if (strcmp(tf,"3")==0){
+		return trans(input, tf,target);
+	}	
 	static char result[MAX_STRING]="original string";
 	return result;
+}
+
+int check_file(char* input_file)
+{
+	return 0;
+
 }
