@@ -1,27 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h> //for error calling exit()
 #include <string.h>
-int main(int argc, char *argv[]) {
-  // get command line input
-  // printf("%s\n", argv[1]);
-  // open file and read file
-  FILE *fp;
-  FILE *wp;
-  char c;
-  fp = fopen(argv[1], "r");
-  wp = fopen(argv[2], "w+");
-  while(1) { 
-	 c = fgetc(fp);
-	 if (feof(fp)){
-		break;
-	 }
- 	//printf("%c", c);
-	fputc(c, wp);	
-  }
+#include "translator.h"
+#define MAX_STRING 1024
 
-//close file pointers
-  fclose(fp);
-  fclose(wp);
-  printf("Wrote successfully");
-   return(0);
+int main(int argc, char *argv[]) {
+  printf("testing environment GO!\n");
+  char input_file_path[MAX_STRING] = "../PracProj/test.txt";
+  char type_format[MAX_STRING] = "3"; 
+  char target_file_path[MAX_STRING] = "here.txt";
+  int t = check_file(input_file_path);
+  if (t == 1)
+  {
+    exit(0);
+  }
+  char* res = control(input_file_path,type_format,target_file_path);
+  char* ret = type(res, type_format);
+  //printf("Final Result: %s\n",res);
+  return(0);
 }
