@@ -32,8 +32,9 @@
 #define SWAP_FORMATS 3
 #define OUTPUT_FOLDER "../testData/";
 
-char* control(char* input, char* tf, char* target);
+char* get_values(char* input);
 int check_file(char* input);
-char* type(char* values, char* tf);
+char* change_type(char* values, char* tf);
+
 
 #endif /* TRANSLATOR_H */

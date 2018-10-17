@@ -220,15 +220,9 @@ int type_convert(char* s)
 	}
 }
 
-char* trans(char* input,  char* tf, char* target) {
-	// get command line input 
-	// //printf("%s\n", argv[1]);
-	// open file and read file
-	//int t = bin_test();
-    
-    printf("Arguments: %s %s %s \n",input,tf,target );
+char* get_values(char* input) {
+    printf("Arguments: %s\n",input );
 	FILE *fp;
-	FILE *wp;
 	char s[MAX_STRING] = "";
 	char append[MAX_STRING] = "";
  	static char ret[MAX_STRING]="";
@@ -241,7 +235,6 @@ char* trans(char* input,  char* tf, char* target) {
 	int hex_ascii_switch = 0;
 	int ascii_reset = 1;
 	fp = fopen(input, "r");
-	wp = fopen(target, "w+");
 
 while(1)
 {
@@ -274,15 +267,12 @@ while(1)
 		}
 		if (feof(fp)){
 			printf("\nReached end of file 1");
-			fputc('1', wp);	
 			strcat(ret,"\x3");
 			strcat(ret,"\x4");
 			memset(s,0,sizeof(s));
 
 			fclose(fp);	//close file pointers
-			fclose(wp);
 		//	printf("\nBUFFER: %s\n: ", ret);
-
 			printf("\nWrote successfully\n");
 	 		return ret;
 	 }
@@ -292,21 +282,19 @@ while(1)
 	}
 	
 
-   // printf("\nType String: %s\n",s);	
+   printf("\nType String: %s\n",s);	
 
 	type = type_convert(s);
 	if (type == 0)
 	{
-		amount = 2;
-		num_counter = 4;
+		amount = 2; // # of bytes in amount
+		num_counter = 4;// # of chars per num
 		hex_ascii_switch = 0;
 	}
 	if (type == 1)
 	{
-		amount = 6;
+		amount = 6; // # of bytes in amount
 		hex_ascii_switch = 1;
-		num_counter = 5;
-
 	}
   memset(s,0,sizeof(s));	
   while (amount > 0)
@@ -318,27 +306,20 @@ while(1)
 		}
 		if (feof(fp)){
 			printf("\nReached end of file 2");
-			fputc('2', wp);	
 			memset(s,0,sizeof(s));
 			strcat(ret,"\x3");
-
 			strcat(ret,"\x4");
 			fclose(fp);	//close file pointers
-			fclose(wp);
 		//printf("\nBUFFER: %s\n: ", ret);
-
-		printf("\nWrote successfully\n");
-		 return ret;
+			printf("\nWrote successfully\n");
+		 	return ret;
 	 }
 	 	strcat(s,c);
 	 	//printf("\nstring: %s\n",s);	
-
 		amount--;
 	}
- // printf("\nAmount String: %s\n",s);	
-
+ 	//printf("\nAmount String: %s",s);	
 	int act_amount = 0;
-
 	if (hex_ascii_switch == 0)
 	{
 		 act_amount = hex_convert(s);
@@ -348,8 +329,8 @@ while(1)
 		  act_amount = ascii_convert(s);
 	}
 
-  //printf("\nActual Amount: %d\n", act_amount);
-    printf("\n 0%d ", act_amount);	
+    //printf("\nActual Amount: %d\n", act_amount);
+    //printf("\n 0%d ", act_amount);	
     sprintf(append,"%d",type); // put the int into a string
     strcat(ret, append);
     //strcat(ret, "-");
@@ -362,6 +343,10 @@ while(1)
 	int char_counter = 0;
 	int value = 0;
 	int curr = 0;
+	if(act_amount == 0)
+	{
+		strcat(ret, "\x3");
+	}
   while (act_amount > 0)
   {
   	if (ascii_reset == 0)
@@ -387,7 +372,7 @@ while(1)
 		if (feof(fp))
 		{
 	 		value = ascii_convert(s);
-    	    printf("%d", value);
+    	    //printf("%d", value);
 			sprintf(append,"%d",value); // put the int into a string
     		strcat(ret, append);
     		strcat(ret,"\x3"); // end delimeter for result
@@ -395,9 +380,7 @@ while(1)
 	 		act_amount--;
 	  	    memset(s,0,sizeof(s));
 			printf("\nReached end of file 3");
-			fputc('3', wp);	
 			fclose(fp);	//close file pointers
-			fclose(wp);
 			//printf("\nBUFFER:\n %s\n: ", ret);
 			printf("\nWrote successfully\n");
 	 		return ret;
@@ -414,11 +397,11 @@ while(1)
    //hex check
   if(hex_ascii_switch==0)
   {
-	 if(char_counter == num_counter) // when have (types's) num characters
+	 if(char_counter == num_counter) // when have (types 0's) num characters
 	 {
-	 //	printf("\nValue: %s\n",s);	
+	    //printf("\nValue: %s\n",s);	
 		value = hex_convert(s);
-	 	printf("%d,", value);
+	 	//printf("%d,", value);
   		sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
 	 	char_counter = 0;   // reset counter
@@ -433,24 +416,24 @@ while(1)
 
 	 	}
 	 	memset(s,0,sizeof(s));	//resets string
-	 // //printf("\nAmount: %d,", act_amount);
+	 	//printf("\ndecrease amount: %d\n", act_amount);
 	 }
 	}
 	else
 	{
 	 if(c[0] == 'c' ) //hOW ENTER 
 	 {
-	 	//printf("\nValue: %s\n",s);	
-	 	//printf("\nGot number: %s", s);
+	 	printf("\nGot number: %s", s);
 	 	value = ascii_convert(s);
-    	printf("%d,", value);
+	 	  printf("\nConverted: %d", value);
+    	//printf("%d,", value);
       sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
 		strcat(ret, ",");
 
 	 	act_amount--;
 	  memset(s,0,sizeof(s));	//resets string
-	 // //printf("\nAmount: %d", act_amount);
+	 	printf("\nAmount: %d", act_amount);
 	 }
 	 if (c[0] == '0'  && s[strlen(s)-2] != '3')
 	 {
@@ -477,49 +460,502 @@ while(1)
 	 	if (strcmp(c,"1")==0 || strcmp(c,"0")==0)//if is end of ASCII, translate
 	 	{
 	 	value = ascii_convert(s);
-    	printf("%d", value);
-    	  sprintf(append,"%d",value); // put the int into a string
+    	//printf("%d", value);
+    	sprintf(append,"%d",value); // put the int into a string
     	strcat(ret, append);
 		strcat(ret, "\x3");
 	 	act_amount--;
-	  memset(s,0,sizeof(s));	
-	  //printf("\nEnd of ASCII\n");
+	  	memset(s,0,sizeof(s));	
+	  	//printf("\nEnd of ASCII\n");
 	 	}
 	
 	 }
 	}
   }
   type_counter = 2;
+ }
 }
-/*printf("OUT OF LOOP"); ///BROkEN
-	char r[4] ="FUCK";
-	fputc(r[0], wp);	
-	fputc('U', wp);	
-	fputc('C', wp);	
-	fputc('K', wp);	
-*/
+ char* int2bin(int n)
+ {		//source https://www.quora.com/Is-there-a-function-in-C-that-converts-an-integer-into-bits
+        // determine the number of bits needed ("sizeof" returns bytes)
+        int nbits = sizeof(n) * 8;
+        char *s = malloc(nbits+1);  // +1 for '\0' terminator
+        s[nbits] = '\0';
+        // forcing evaluation as an unsigned value prevents complications
+        // with negative numbers at the left-most bit
+        unsigned int u = *(unsigned int*)&n;
+        int i;
+        unsigned int mask = 1 << (nbits-1); // fill in values right-to-left
+        for (i = 0; i < nbits; i++, mask >>= 1)
+            s[i] = ((u & mask) != 0) + '0';
+        return s;
+ }
+
+char* bin2hex(char* bin)
+{
+//	printf("Starting bin: %s\n",bin);
+	static char hex[MAX_STRING]="";
+	char append[MAX_STRING] = "";
+	char c[2] = "\0";	
+	int chunk = 4;
+	int skip_4 = 4;
+	int i = 0;
+ 	for (; i <strlen(bin)+1; i++)
+	{
+		if (chunk == 0)
+		{
+			//printf("Append: %s\n", append);
+			if(skip_4 > 0)
+			{
+				skip_4--;
+				chunk = 4;
+				memset(append,0,sizeof(append));	
+				memset(c,0,sizeof(c));	
+			}
+			if (strcmp(append,"0000")==0)
+			{
+				char* key = "0";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0001")==0)
+			{
+				char* key = "1";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0010")==0)
+			{
+				char* key = "2";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0011")==0)
+			{
+				char* key = "3";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0100")==0)
+			{
+				char* key = "4";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0101")==0)
+			{
+				char* key = "5";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0110")==0)
+			{
+				char* key = "6";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"0111")==0)
+			{
+				char* key = "7";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1000")==0)
+			{
+				char* key = "8";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1001")==0)
+			{
+				char* key = "9";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1010")==0)
+			{
+				char* key = "a";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1011")==0)
+			{
+				char* key = "b";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1100")==0)
+			{
+				char* key = "c";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1101")==0)
+			{
+				char* key = "d";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1110")==0)
+			{
+				char* key = "e";
+				strcat(hex,key);
+			}
+			if (strcmp(append,"1111")==0)
+			{
+				char* key = "f";
+				strcat(hex,key);
+			}
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			chunk = 4;
+		}
+		c[0] = bin[i];
+		strcat(append,c);
+		chunk--;
+	}
+	return hex;
 }
-
-
 
 char* ToTypeZero(char* set)
 {
-	printf("TypeZero!: %s\n\n", set);
-	static char result[MAX_STRING]="Type 0 string";
-	return result;
+	//printf("	TypeZero!: %s\n\n", set);
+	int base = 2;
+	static char sub[MAX_STRING]="";
+	char append[MAX_STRING] = "";
+	char c[2] = "\0";
+	int i = 1;
+	c[0]=set[i];
+	if(strcmp(c,"0")==0)
+	{
+		//printf("	Is empty");
+		strcpy(sub,"0000");
+		memset(append,0,sizeof(append));	
+		memset(c,0,sizeof(c));	
+		return sub;
+	}
+	while(1)
+	{
+		if (set[i] == '\x3')
+		{
+			//printf("Num input: %s\n", append);
+			char* hex = bin2hex(int2bin(atoi(append)));
+			//printf("My hex--: %s\n\n", hex);
+			strcat(sub, hex);
+			memset(hex,0,sizeof(hex));	
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			break;
+		}
+		if (set[i] == ',')
+		{
+			//printf("Num input: %s\n", append);
+			char* hex = bin2hex(int2bin(atoi(append)));
+			//printf("My hex--: %s\n", hex);
+			strcat(sub, hex);
+			memset(hex,0,sizeof(hex));	
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			i++;
+			continue;
+		}	
+		c[0] = set[i];
+		strcat(append,c);
+		i++;
+	}
+	return sub;
+}
+
+char* num2ascii(char* num)
+{
+	//printf("Num input: %s\n", num);
+	static char ascii[MAX_STRING]="";
+	char c[2] = "\0";	
+	int i = 0;
+	for(; i <strlen(num);i++)
+	{
+		//printf("%c\n",num[i]);
+		c[0] = num[i];
+		if (strcmp(c, "0")==0)
+		{
+			strcat(ascii,"30");
+		}
+		if (strcmp(c, "1")==0)
+		{
+			strcat(ascii,"31");
+		}
+		if (strcmp(c, "2")==0)
+		{
+			strcat(ascii,"32");
+		}
+		if (strcmp(c, "3")==0)
+		{
+			strcat(ascii,"33");
+		}
+		if (strcmp(c, "4")==0)
+		{
+			strcat(ascii,"34");
+		}
+		if (strcmp(c, "5")==0)
+		{
+			strcat(ascii,"35");
+		}
+		if (strcmp(c, "6")==0)
+		{
+			strcat(ascii,"36");
+		}
+		if (strcmp(c, "7")==0)
+		{
+			strcat(ascii,"37");
+		}
+		if (strcmp(c, "8")==0)
+		{
+			strcat(ascii,"38");
+		}
+		if (strcmp(c, "9")==0)
+		{
+			strcat(ascii,"39");
+		}
+		//memset(c,0,sizeof(c));	
+	}
+	return ascii;
+}
+char* SetTyping(char* first)
+{
+	//printf("	Set Typing Arg: %s\n\n", first);
+	static char type[MAX_STRING]="";
+	char append[MAX_STRING] = "";
+	char c[2] = "\0";
+	strcat(type, "01");
+	for (int i = 1; i<strlen(first); i++)	
+	{
+		c[0] = first[i];
+		//printf("	curr:%c   %s\n",c[0], type);
+		if (strcmp(c, "0")==0)
+		{
+			strcat(append,"30");
+		}
+		if (strcmp(c, "1")==0)
+		{
+			strcat(append,"31");
+		}
+		if (strcmp(c, "2")==0)
+		{
+			strcat(append,"32");
+		}
+		if (strcmp(c, "3")==0)
+		{
+			strcat(append,"33");
+		}
+		if (strcmp(c, "4")==0)
+		{
+			strcat(append,"34");
+		}
+		if (strcmp(c, "5")==0)
+		{
+			strcat(append,"35");
+		}
+		if (strcmp(c, "6")==0)
+		{
+			strcat(append,"36");
+		}
+		if (strcmp(c, "7")==0)
+		{
+			strcat(append,"37");
+		}
+		if (strcmp(c, "8")==0)
+		{
+			strcat(append,"38");
+		}
+		if (strcmp(c, "9")==0)
+		{
+			strcat(append,"39");
+		}
+	}
+	if (strlen(append) == 2)
+	{
+		//printf("	Only 1 digit: %s \n", append);
+		c[0] = first[1];
+		if (strcmp(c, "0")==0)
+		{
+			strcat(type,"303030");
+		}
+		if (strcmp(c, "1")==0)
+		{
+			strcat(type,"303031");
+		}
+		if (strcmp(c, "2")==0)
+		{
+			strcat(type,"303032");
+		}
+		if (strcmp(c, "3")==0)
+		{
+			strcat(type,"303033");
+		}
+		if (strcmp(c, "4")==0)
+		{
+			strcat(type,"303034");
+		}
+		if (strcmp(c, "5")==0)
+		{
+			strcat(type,"303035");
+		}
+		if (strcmp(c, "6")==0)
+		{
+			strcat(type,"303036");
+		}
+		if (strcmp(c, "7")==0)
+		{
+			strcat(type,"303037");
+		}
+		if (strcmp(c, "8")==0)
+		{
+			strcat(type,"303038");
+		}
+		if (strcmp(c, "9")==0)
+		{
+			strcat(type,"303039");
+		}
+	}
+	if (strlen(append) == 4)
+	{
+		//printf("	Only 2 digit: %s \n", append);
+		c[0] = first[1];
+		if (strcmp(c, "0")==0)
+		{
+			strcat(type,"3030");
+		}
+		if (strcmp(c, "1")==0)
+		{
+			strcat(type,"3031");
+		}
+		if (strcmp(c, "2")==0)
+		{
+			strcat(type,"3032");
+		}
+		if (strcmp(c, "3")==0)
+		{
+			strcat(type,"3033");
+		}
+		if (strcmp(c, "4")==0)
+		{
+			strcat(type,"3034");
+		}
+		if (strcmp(c, "5")==0)
+		{
+			strcat(type,"3035");
+		}
+		if (strcmp(c, "6")==0)
+		{
+			strcat(type,"3036");
+		}
+		if (strcmp(c, "7")==0)
+		{
+			strcat(type,"3037");
+		}
+		if (strcmp(c, "8")==0)
+		{
+			strcat(type,"3038");
+		}
+		if (strcmp(c, "9")==0)
+		{
+			strcat(type,"3039");
+		}
+		c[0] = first[3];
+		if (strcmp(c, "0")==0)
+		{
+			strcat(type,"30");
+		}
+		if (strcmp(c, "1")==0)
+		{
+			strcat(type,"31");
+		}
+		if (strcmp(c, "2")==0)
+		{
+			strcat(type,"32");
+		}
+		if (strcmp(c, "3")==0)
+		{
+			strcat(type,"33");
+		}
+		if (strcmp(c, "4")==0)
+		{
+			strcat(type,"34");
+		}
+		if (strcmp(c, "5")==0)
+		{
+			strcat(type,"35");
+		}
+		if (strcmp(c, "6")==0)
+		{
+			strcat(type,"36");
+		}
+		if (strcmp(c, "7")==0)
+		{
+			strcat(type,"37");
+		}
+		if (strcmp(c, "8")==0)
+		{
+			strcat(type,"38");
+		}
+		if (strcmp(c, "9")==0)
+		{
+			strcat(type,"39");
+		}	
+	}
+	if(strlen(append)==6)
+	{
+		//already has formated
+	}
+	if(strlen(append) > 6)
+	{
+		//is incorrect, do format error
+	}
+	return type;
 }
 
 char* ToTypeOne(char* set)
 {
-	printf("TypeOne!: %s\n\n", set);
-	static char result[MAX_STRING]="Type 1 string";
-	return result;
+	//printf("TypeOne Arg: %s\n\n", set);
+	static char sub[MAX_STRING]= "";
+	char append[MAX_STRING] = "";
+	char c[2] = "\0";
+	int i = 0;
+	int get_type =  0;
+	while(1)
+	{
+		if (set[i] == '\x3')
+		{
+			char* ascii = num2ascii(append);
+			//printf("My ascii--: %s\n\n", hex);
+			strcat(sub, ascii);
+			memset(ascii,0,sizeof(ascii));	
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			break;
+		}
+		if (set[i] == ',')
+		{
+			if (get_type == 0)
+			{
+				char* new_type = SetTyping(append);
+				strcat(sub,new_type);
+				//if(strcmp(new_type,"303030")==0){break;}
+				memset(new_type,0,sizeof(new_type));	
+				memset(append,0,sizeof(append));	
+				memset(c,0,sizeof(c));	
+				get_type=1;
+				i++;
+				continue;
+			}
+			char* ascii  = num2ascii(append);
+			//printf("My ascii--: %s\n", hex);
+			strcat(sub, ascii);
+			strcat(sub, "2c");
+			memset(ascii,0,sizeof(ascii));	
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			i++;
+			continue;
+		}	
+		c[0] = set[i];
+		strcat(append,c);
+		i++;
+	}
+	return sub;
 }
 
-char* type(char* values, char* tf)
+char* change_type(char* values, char* tf)
 {
-	//printf("Values Argument: %s\n", values);
+	printf("\nValues Argument: %s\n\n", values);
 	static char result[MAX_STRING]="";
+	strcat(result, "\x2");//starting delimeter
 	char append[MAX_STRING] = "";
 	char c[2] = "\0";
 	if (strcmp(tf,"3")==0)
@@ -537,15 +973,182 @@ char* type(char* values, char* tf)
 				{
 					if (values[cross_sec] == '\x3')
 					{
+						c[0] = values[cross_sec];
+						strcat(append, c);
 						if (append[0] == '0')
 						{
-							printf("Doing type 0->1 conversion\n");
+							//printf("Doing type 0->1 conversion\n");
 							char* done = ToTypeOne(append);
+							printf("Type 0->1 result: %s\n", done);
+							memset(done,0,sizeof(done));	
 						}
 						if (append[0] == '1')
 						{
-							printf("Doing type 1->0 conversion\n");
+							//printf("Doing type 1->0 conversion\n");
 							char* done = ToTypeZero(append);
+							printf("Type 1->0 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+
+						}
+						//printf("End of value: %c\n", values[cross_sec-1]);
+						i = cross_sec;
+						break;
+					}
+					c[0] = values[cross_sec];
+					//printf("%c\n", values[cross_sec]);
+					strcat(append, c);
+					cross_sec++;
+				}
+			}
+			//printf("End of value: %c\n", values[i-1]);
+			if(values[i]=='\x4')
+			{
+				printf("End of arg.\n");
+				break;
+			}
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			i++;
+		}
+	}
+
+	if (strcmp(tf,"2")==0)
+	{	
+		int i = 0; // index of string
+		int cross_sec = i; 
+		while(1)
+		{
+			if(values[i] == '\x2')
+			{
+				//printf("Start of value: %c\n", values[i+1]);
+				i++;
+				cross_sec = i;
+				while(1)
+				{
+					if (values[cross_sec] == '\x3')
+					{
+						c[0] = values[cross_sec];
+						strcat(append, c);
+						if (append[0] == '0')
+						{
+							//printf("Doing type 0->1 conversion\n");
+							char* done = ToTypeZero(append);
+							printf("Type 0->0 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+						}
+						if (append[0] == '1')
+						{
+							//printf("	Doing type 1->0 conversion: %s\n", append);
+							char* done = ToTypeZero(append);
+							printf("Type 1->0 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+
+						}
+						//printf("End of value: %c\n", values[cross_sec-1]);
+						i = cross_sec;
+						break;
+					}
+					c[0] = values[cross_sec];
+					//printf("%c\n", values[cross_sec]);
+					strcat(append, c);
+					cross_sec++;
+				}
+			}
+			//printf("End of value: %c\n", values[i-1]);
+			if(values[i]=='\x4')
+			{
+				printf("End of arg.\n");
+				break;
+			}
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			i++;
+		}
+	}
+	if (strcmp(tf,"1")==0)
+	{	
+		int i = 0; // index of string
+		int cross_sec = i; 
+		while(1)
+		{
+			if(values[i] == '\x2')
+			{
+				//printf("Start of value: %c\n", values[i+1]);
+				i++;
+				cross_sec = i;
+				while(1)
+				{
+					if (values[cross_sec] == '\x3')
+					{
+						c[0] = values[cross_sec];
+						strcat(append, c);
+						if (append[0] == '0')
+						{
+							//printf("Doing type 0->1 conversion: %s\n", append);
+							char* done = ToTypeOne(append);
+							printf("Type 0->1 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+						}
+						if (append[0] == '1')
+						{
+							//printf("Doing type 1->0 conversion\n");
+							char* done = ToTypeOne(append);
+							printf("Type 1->1 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+
+						}
+						//printf("End of value: %c\n", values[cross_sec-1]);
+						i = cross_sec;
+						break;
+					}
+					c[0] = values[cross_sec];
+					//printf("%c\n", values[cross_sec]);
+					strcat(append, c);
+					cross_sec++;
+				}
+			}
+			//printf("End of value: %c\n", values[i-1]);
+			if(values[i]=='\x4')
+			{
+				printf("End of arg.\n");
+				break;
+			}
+			memset(append,0,sizeof(append));	
+			memset(c,0,sizeof(c));	
+			i++;
+		}
+	}
+	if (strcmp(tf,"0")==0)
+	{	
+		int i = 0; // index of string
+		int cross_sec = i; 
+		while(1)
+		{
+			if(values[i] == '\x2')
+			{
+				//printf("Start of value: %c\n", values[i+1]);
+				i++;
+				cross_sec = i;
+				while(1)
+				{
+					if (values[cross_sec] == '\x3')
+					{
+						c[0] = values[cross_sec];
+						strcat(append, c);
+						if (append[0] == '0')
+						{
+							//printf("Doing type 0->1 conversion\n");
+							char* done = ToTypeZero(append);
+							printf("Type 0->0 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+						}
+						if (append[0] == '1')
+						{
+							//printf("Doing type 1->0 conversion\n");
+							char* done = ToTypeOne(append);
+							printf("Type 1->1 result: %s\n", done);
+							memset(done,0,sizeof(done));	
+
 						}
 						//printf("End of value: %c\n", values[cross_sec-1]);
 						i = cross_sec;
@@ -569,25 +1172,6 @@ char* type(char* values, char* tf)
 		}
 	}
 	return result;
-}
-
-char* control(char* input,  char* tf, char* target) 
-{
-	static char result[MAX_STRING]="copy original file";
-	printf("In control: %s\n",tf);
-	if (strcmp(tf,"0")==0){
-		return result;
-	}	
-	if (strcmp(tf,"1")==0){
-		return trans(input, tf,target);
-	}
-	if (strcmp(tf,"2")==0)
-	{
-		return trans(input, tf,target);
-	}
-	if (strcmp(tf,"3")==0){
-		return trans(input, tf,target);
-	}	
 }
 
 int check_file(char* input_file)
