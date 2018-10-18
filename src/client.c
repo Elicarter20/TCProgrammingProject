@@ -81,7 +81,6 @@ int main(int argc, char const *argv[])
     if (valread<0){ perror("ERROR reading from socket");}
     if(tmp[0]!='\x3')
     {
-        printf("Faulty server\n");
         perror("Faulty server\n");
         return 0;
     }

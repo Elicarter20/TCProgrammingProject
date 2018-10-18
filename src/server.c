@@ -78,7 +78,6 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE); 
     } 
 
-    char buffer[MAX_STRING] = {0}; 
     while(1) // continously running server until Exit
     {
         int new_socket;
@@ -101,6 +100,12 @@ int main(int argc, char const *argv[])
         if (tmp[0]=='\x2')
         {
             printf("Priming server...\n");
+        }
+        else
+        {
+            int r = shutdown(new_socket,2);
+            printf("Closed Client Connection\n\n");   
+            continue;
         }
         char ack[2] = "\x3";
         char rej[2] = "\x4";
