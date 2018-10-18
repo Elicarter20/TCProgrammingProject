@@ -4,13 +4,3 @@
 003 2330,48350,1
 001 0
 002 65535,0
-
-each thing is a unit! format 1 always has type 0, format 2 always have type 1
-oh they are 16 bit numbers......
-
-
-0002 0102 0304 0130 3032 3539 2c33 3437
-0130 3031 3930 3000 0309 1abc de00 0100
-0100 0001 3030 3236 3535 3335 2c30 
-
-0000
