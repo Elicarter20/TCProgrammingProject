@@ -13,27 +13,27 @@
 int main(int argc, char const *argv[]) 
 { 
 
-	char server_IP[MAX_STRING]; 
-	strcpy(server_IP,argv[1]); // IP address of server
+    char server_IP[MAX_STRING]; 
+    strcpy(server_IP,argv[1]); // IP address of server
     
     int server_port = atoi(argv[2]); // TCP port of server 
     
     char input_file_path[MAX_STRING];
-	strcpy(input_file_path,argv[3]);// Location of input file on same system as server
-	
-	char type_format[MAX_STRING];
-	strcpy(type_format,argv[4]);// Location of input file on same system as server
-	
-	char target_file_path[MAX_STRING];
-	strcpy(target_file_path,argv[5]);// File name to save translation under
-	printf("\n\nclient params: %s %d %s %s %s", server_IP,server_port,input_file_path,type_format,target_file_path);
+    strcpy(input_file_path,argv[3]);// Location of input file on same system as server
+    
+    char type_format[MAX_STRING];
+    strcpy(type_format,argv[4]);// Location of input file on same system as server
+    
+    char target_file_path[MAX_STRING];
+    strcpy(target_file_path,argv[5]);// File name to save translation under
+    //printf("\n\nclient params: %s %d %s %s %s", server_IP,server_port,input_file_path,type_format,target_file_path);
 
 
-	//struct sockaddr_in address; // UNUSED CODE FROM GEEKS4GEEKS
+    //struct sockaddr_in address; // UNUSED CODE FROM GEEKS4GEEKS
 
-	int sock = 0;
-	struct sockaddr_in server_addr;
-	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) // constructs communnication endpoint
+    int sock = 0;
+    struct sockaddr_in server_addr;
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) // constructs communnication endpoint
     { 
         printf("\n Socket creation error \n"); 
         return -1; 
@@ -61,11 +61,11 @@ int main(int argc, char const *argv[])
     //have used server_IP AND server_port
     char message[MAX_STRING];
     strcat(message, input_file_path);
-    strcat(message, ",");
+    strcat(message, "\x1");
     strcat(message, type_format);
-    strcat(message, ",");
+    strcat(message, "\x1");
     strcat(message, target_file_path);
-    printf("\nFinal Message: %s\n", message);
+    //printf("\nFinal Message: %s\n", message);
 
     send(sock, message, strlen(message), 0); //sends translation arguments
     printf("\nSent arguments\n");
@@ -73,87 +73,52 @@ int main(int argc, char const *argv[])
     int valread;
     char buffer[MAX_STRING] = {0}; 
 
-    //read socket
-    //first message will be confirmation 
-    //check for delimeter
-    //second message will be content
-    //
     char tmp;
     int index;
     int n;
     while(1)
     {
-    	n = read(sock,&tmp,1);
-    	if (n<0) {perror("ERROR reading from socket");}
-    	if (tmp != '\x2')
-    	{
-    		//prevents furhtering of client until get confirmation
-    		continue;
-    	}
-    	index=0;
-    	while(1)
-    	{
-	   		n =read(sock, &tmp, 1);
-    		if (n<0){ perror("ERROR reading from socket");}
-    		//printf("curr: %c\n",tmp);
-  			if (tmp == '\x3')
-            	break;
-        	// TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
-        	buffer[index] = tmp;
-        	index++;
-    	}
-		printf("Status: %s\n", buffer);
-		if (strcmp(buffer,"1")==0)
-		{
-			printf("Translation failed");
-			exit(0);
-		}
-		index = 0;
-		memset(buffer,0,sizeof(buffer));
-		while(1)
-    	{
-    		n =read(sock, &tmp, 1);
-    		//printf("curr: %c\n",tmp);
-    		if (n<0){ perror("ERROR reading from socket");}
-  			if (tmp == '\x4') break;
-        	// TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
-			//printf("Message: %s\n", buffer);
-        	buffer[index] = tmp;
-        	index++;
-    	}
-    	break;
+        n = read(sock,&tmp,1);
+        if (n<0) {perror("ERROR reading from socket");}
+        if (tmp != '\x2')
+        {
+            //prevents furhtering of client until get confirmation
+            continue;
+        }
+        index=0;
+        while(1)
+        {
+            n =read(sock, &tmp, 1);
+            if (n<0){ perror("ERROR reading from socket");}
+            //printf("curr: %c\n",tmp);
+            if (tmp == '\x3')
+                break;
+            // TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
+            buffer[index] = tmp;
+            index++;
+        }
+        //printf("Status: %s\n", buffer);
+        if (strcmp(buffer,"1")==0)
+        {
+            printf("Translation failed");
+            exit(0);
+        }
+        index = 0;
+        memset(buffer,0,sizeof(buffer));
+        while(1)
+        {
+            n =read(sock, &tmp, 1);
+            //printf("curr: %c\n",tmp);
+            if (n<0){ perror("ERROR reading from socket");}
+            if (tmp == '\x4') break;
+            // TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
+            //printf("Message: %s\n", buffer);
+            buffer[index] = tmp;
+            index++;
+        }
+        break;
     }
-	printf("Final Message: %s\n\n", buffer);
-	printf("Format: %s\n",type_format);
-	if (strcmp(type_format, "0")==0)
-	{
-		printf("Final Message: %s\n\n", buffer);
-	}
-	else
-	{
-	for (int tint = 0; tint < strlen(buffer); tint++)
-	{
-		if (buffer[tint] == '\x2')
-		{
-			tint = tint+2;//skips delimeter and type
-			printf("%c ", buffer[tint]);//prints amount
-			tint++;
-			continue;
-		}
-		if(buffer[tint]==',')
-		{
-			printf(",");
-			continue;
-		}
-		if (buffer[tint] == '\x3')
-		{
-			printf("\n");
-			continue;
-		}
-		printf("%c",buffer[tint]);
-
-	}
-}
-    printf("Quitting...\n");
+    printf("----Translation----:\n %s\n", buffer);
+    printf("\nQuitting...");
     return 0; //quits
 } 

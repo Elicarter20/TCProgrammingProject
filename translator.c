@@ -17,7 +17,8 @@
 //1.) do writing! with perfect case DONE!
 //2.) do file checking (ex. check if ascii is greater than  2147483647 (check atoi of value!))
 		// ^^^ IS VERY HARD DO LATER!!!
-//3.) then do server client fixes new delimeters!
+//3.) then do server client fixes new delimeters! (DONE!)
+//4.) fix file non existant socketing....
 
 int hex_convert(char* s)
 {
@@ -224,7 +225,7 @@ int type_convert(char* s)
 }
 
 char* get_values(char* input) {
-    printf("Arguments: %s\n",input );
+    //printf("Arguments: %s\n",input );
 	FILE *fp;
 	char s[MAX_STRING] = "";
 	char append[MAX_STRING] = "";
@@ -269,7 +270,7 @@ while(1)
 			continue;
 		}
 		if (feof(fp)){
-			printf("\nReached end of file 1");
+			//printf("\nReached end of file 1");
 			strcat(ret,"\x3");
 			strcat(ret,"\x4");
 			memset(s,0,sizeof(s));
@@ -308,7 +309,7 @@ while(1)
 			continue;
 		}
 		if (feof(fp)){
-			printf("\nReached end of file 2");
+			//printf("\nReached end of file 2");
 			memset(s,0,sizeof(s));
 			strcat(ret,"\x3");
 			strcat(ret,"\x4");
@@ -382,7 +383,7 @@ while(1)
 			strcat(ret,"\x4"); // end delimeter for all output
 	 		act_amount--;
 	  	    memset(s,0,sizeof(s));
-			printf("\nReached end of file 3");
+			//printf("\nReached end of file 3");
 			fclose(fp);	//close file pointers
 			//printf("\nBUFFER:\n %s\n: ", ret);
 		//	printf("\nWrote successfully\n");
@@ -956,7 +957,7 @@ char* ToTypeOne(char* set)
 
 char* change_type(char* values, char* tf)
 {
-//	printf("\nValues Argument: %s\n\n", values);
+	//printf("\nValues Argument: %s\n\n", values);
 	static char result[MAX_STRING]="";
 	char append[MAX_STRING] = "";
 	char c[2] = "\0";
@@ -1071,7 +1072,7 @@ char* change_type(char* values, char* tf)
 			//printf("End of value: %c\n", values[i-1]);
 			if(values[i]=='\x4')
 			{
-				printf("End of arg.\n");
+				//printf("End of arg.\n");
 				break;
 			}
 			memset(append,0,sizeof(append));	
@@ -1130,7 +1131,7 @@ char* change_type(char* values, char* tf)
 			//printf("End of value: %c\n", values[i-1]);
 			if(values[i]=='\x4')
 			{
-				printf("End of arg.\n");
+				//printf("End of arg.\n");
 				break;
 			}
 			memset(append,0,sizeof(append));	
@@ -1189,7 +1190,7 @@ char* change_type(char* values, char* tf)
 			//printf("End of value: %c\n", values[i-1]);
 			if(values[i]=='\x4')
 			{
-				printf("End of arg.\n");
+				//printf("End of arg.\n");
 				break;
 			}
 			memset(append,0,sizeof(append));	
@@ -1204,17 +1205,11 @@ char* change_type(char* values, char* tf)
 
 int check_file(char* input_file)
 {
+	//printf("Checking... %s\n", input_file);
 	char append[MAX_STRING] = "";
 	char c[2] = "\0";
 	int i = 0;
-	FILE* fp;
-	fp = fopen(input_file, "r");
-	c[0] = fgetc(fp);
-	if (c[0]!='0')
-	{
-		printf("Incorrect pre-0 at type\n");
-		return 1;
-	}
+
 
 	int get_type = 0;
 	int get_amount = 1;
@@ -1223,6 +1218,14 @@ int check_file(char* input_file)
 	int even_odd = 2;
 	if( access( input_file, F_OK ) != -1 ) 
 	{
+		FILE* fp;
+		fp = fopen(input_file, "r");
+		c[0] = fgetc(fp);
+		if (c[0]!='0')
+		{
+			//printf("Incorrect pre-0 at type\n");
+			return 1;
+		}
 		while(1) 
 		{ 
 			c[0] = fgetc(fp); // if here then should get type correctly
@@ -1301,11 +1304,11 @@ int check_file(char* input_file)
 	 	}
 	 	memset(append,0,sizeof(append));	
 	 	memset(c,0,sizeof(c));	
+	 	fclose(fp);
     	return 0;
 	} 
 	else 
 	{
-		fclose(fp);
 		memset(c,0,sizeof(c));	
     	return 1;
 	}
@@ -1334,7 +1337,7 @@ int do_write(char* trans, char* target)
 		}
 		if(strcmp(c,"\x4")==0)
 		{
-			printf("\nWrote.\n");
+			//printf("\nWrote.\n");
 			break;
 		}
 		fputc(c[0], wp);	

@@ -31,7 +31,7 @@
 // -- Wednesday --
 // Do test cases, perfect translation
 
-
+//ACTUALLLY DO A CLOSE!
 
 
 int main(int argc, char const *argv[]) 
@@ -88,7 +88,7 @@ int main(int argc, char const *argv[])
         	printf("\n did not accept\n"); 
         	exit(EXIT_FAILURE); 
     	} 
-
+        printf("\nOpened Client Connection\n"); 
 		// gets arguments
    		int valread;
     	valread = read( new_socket , buffer, MAX_STRING); 
@@ -98,24 +98,32 @@ int main(int argc, char const *argv[])
 
     	//printf("Arguments: %s\n",buffer );
     	char c[2] = "\0";
-    	char input_file_path[MAX_STRING];
-    	char type_format[MAX_STRING];
-    	char target_file_path[MAX_STRING];
+    	char input_file_path[MAX_STRING]="";
+    	char type_format[MAX_STRING]="";
+    	char target_file_path[MAX_STRING]="";
     	int i = 0;
 
 
      	for (; i < strlen(buffer); i++) // gets input file path
      	{
      		c[0] = buffer[i];
-     		if(buffer[i]==',')
+     		if(buffer[i]=='\x1')
      		{
+                i++;
      			break;
      		}
      		strcat(input_file_path,c);
      	}
-     	c[0] = buffer[i+1]; // gets Type Format
-     	i = i + 3;
-     	strcat(type_format,c);
+        for (; i < strlen(buffer); i++) // gets input file path
+        {
+            c[0] = buffer[i];
+            if(buffer[i]=='\x1')
+            {
+                i++;
+                break;
+            }
+            strcat(type_format,c);
+        }
      	for (; i < strlen(buffer); i++)// gets target directory
      	{	
      		c[0] = buffer[i];
@@ -123,179 +131,143 @@ int main(int argc, char const *argv[])
      	}
 
 
-     	//printf("%s\n",input_file_path); //read this file 
-     	//printf("Test: %s\n",type_format); 	// determins translation
-        //printf("%s\n",target_file_path); // write to this file
+     	printf("file: %s\n",input_file_path); //read this file 
+     	printf("type: %s\n",type_format); 	// determins translation
+        printf("target: %s\n",target_file_path); // write to this file
+        if (strcmp(type_format,"0")!=0 &&strcmp(type_format,"1")!=0 &&strcmp(type_format,"2")!=0 &&strcmp(type_format,"3")!=0)
+        {
+                    int n;
+                    char delim = '\x2';
+                    n = write(new_socket, &delim, 1);
+                    if (n < 0) perror("ERROR writing to socket"); // START: \x2
 
-    	// do translation
-     	char* t = control(input_file_path,type_format,target_file_path);
-     	printf("Function Return->%s\n", t);
-    	//send confirmation
- 	/*  	if (strcmp(type_format,"0")==0)
- 	  	{ 	
-			send(new_socket , yes, strlen(yes) , 0 ); 
-			//send(new_socket , '\x2', 1 , 0 ); 
+                    char* reject = "1";
+                     n = write(new_socket, reject, 1);
+                     if (n < 0) perror("ERROR writing to socket");
+                     printf("Sent Rejection \n");  //sent rejection now quit
+                     delim = '\x3';
+                      n = write(new_socket, &delim, 1);
+                     if (n < 0) perror("ERROR writing to socket"); // tells client to stop waiting
 
- 	  		send(new_socket , t, strlen(t) , 0 ); 
- 	  	    printf("Sent Confirmation \n"); 
+                    memset(input_file_path,0,sizeof(input_file_path));  
+                    memset(type_format,0,sizeof(type_format));  
+                    memset(target_file_path,0,sizeof(target_file_path));    
+                    memset(buffer,0,sizeof(buffer));
+                    int r = shutdown(new_socket,2);
+                    printf("Closed Client Connection\n\n");
+                    continue;//accept new client
 
- 	  	}
- 	  	else
- 	  	{ 	
- 	  		send(new_socket , no , strlen(no) , 0 ); 
- 		   	printf("Sent Rejection \n"); 
-
- 	  	}*/
-
- 	  	int n;
+        }
+        int n;
  	  	char delim = '\x2';
 		n = write(new_socket, &delim, 1);
-		if (n < 0) perror("ERROR writing to socket");
+		if (n < 0) perror("ERROR writing to socket"); // START: \x2
 
-		int m = check_file(input_file_path);
-		if(m==0)
+        // -- checking file --
+        int f = check_file(input_file_path);
+		if(f==0)
 		{
-			char* confirm = "0";
+
+             char* vals = get_values(input_file_path);
+             ///printf("Values: %s\n",vals);
+             char* trans = change_type(vals, type_format);
+            // printf("Trans: %s\n",trans);
+    
+             int m = 2;
+             m = do_write(trans, target_file_path);
+            if(m ==1)
+            {
+                     printf("Failed to write new file!!!\n");
+                     char* reject = "1";
+                     n = write(new_socket, reject, 1);
+                     if (n < 0) perror("ERROR writing to socket");
+                     printf("Sent Rejection \n");  //sent rejection now quit
+                     delim = '\x3';
+                      n = write(new_socket, &delim, 1);
+                     if (n < 0) perror("ERROR writing to socket"); // tells client to stop waiting
+
+                    memset(input_file_path,0,sizeof(input_file_path));  
+                    memset(type_format,0,sizeof(type_format));  
+                    memset(target_file_path,0,sizeof(target_file_path));    
+                    memset(buffer,0,sizeof(buffer));
+                    int r = shutdown(new_socket,2);
+                    printf("Closed Client Connection\n\n");
+                    continue;//accept new client
+            }
+
+			char* confirm = "0"; //sends confirmation after WRITING file
 			n = write(new_socket,confirm,1);
-			if (n < 0) perror("ERROR writing to socket");
+			if (n < 0) perror("ERROR writing to socket"); 
 			printf("Sent Confirmation \n"); 
+
+
 			delim = '\x3';
 			n = write(new_socket, &delim, 1);
-			if (n < 0) perror("ERROR writing to socket");
+			if (n < 0) perror("ERROR writing to socket"); // tells client to stop waiting!
 
+            int i = 0;
+            while(1)
+            {
+                c[0] = trans[i];
+                //printf("%s!\n",c);
+                i++;
+                if(strcmp(c,"\x2")==0)
+                {
+                    //printf("Start of value\n");
+                    continue;
+                }
+                if(strcmp(c,"\x3")==0)
+                {
+                   // printf("End of value\n");
+                    continue;
+                }
+                if(strcmp(c,"\x4")==0)
+                {
+                    n = write(new_socket, &c, 1);
+                    if (n < 0) perror("ERROR writing to socket");
+                    break;
+                }
+                n = write(new_socket, &c, 1);
+            }
+
+            memset(input_file_path,0,sizeof(input_file_path));  
+            memset(type_format,0,sizeof(type_format));  
+            memset(target_file_path,0,sizeof(target_file_path));    
+            memset(vals,0,sizeof(vals));    
+            memset(trans,0,sizeof(trans));    
+            memset(buffer,0,sizeof(buffer));    
 		}
  	  	else
  	  	{ 	
  	  		char* reject = "1";
 			n = write(new_socket, reject, 1);
 			if (n < 0) perror("ERROR writing to socket");
-		 	printf("Sent Rejection \n"); 
-		 	delim = '\x3';
-			n = write(new_socket, &delim, 1);
-			if (n < 0) perror("ERROR writing to socket");
+		 	printf("Sent Rejection \n");  //sent rejection now quit
+            delim = '\x3';
+            n = write(new_socket, &delim, 1);
+            if (n < 0) perror("ERROR writing to socket"); // tells client to stop waiting
+
 			memset(input_file_path,0,sizeof(input_file_path));	
 			memset(type_format,0,sizeof(type_format));	
-			memset(target_file_path,0,sizeof(target_file_path));	
-    		memset(buffer,0,sizeof(buffer));
-    		memset(t,0,sizeof(t));	
-		 	continue;//accept new client
+            memset(target_file_path,0,sizeof(target_file_path));    
+            memset(buffer,0,sizeof(buffer));
+            int r = shutdown(new_socket,2);
+            printf("Closed Client Connection\n\n"); 		 	
+            continue;//accept new client
  	  	}
 
-
- 	  	printf("\nType Call: %s\n",type_format);
- 	  	int out  = 0;
- 	  	int inner = out;
- 	  	int get_type = 0;
+        // -- get translations --
+  
 
 
- 	  	FILE *fp;
- 		FILE *wp;
-  		char cr;	
-  		printf("%s\n",input_file_path); //read this file 
-     	printf("Type: %s\n",type_format); 	// determins translation
-        printf("%s\n",target_file_path); // write to this file
-		fp = fopen(input_file_path, "r");
-		wp = fopen(target_file_path, "w+");
- 	  	while(1)
- 	  	{
- 	  		if (strcmp(type_format,"0")==0)
- 	  		{
- 	  			//printf("starting acknowledgements: \n");
-				if(t[out] == '\x2')//assumes will have \x2 at start
- 	  			{
-					n = write(new_socket,&t[out],1);
- 	  				inner = out+1;
- 	  				while(1)
- 	  				{
- 	  					if (get_type==0)
- 	  					{
-							printf("\nType: %c |  Func: %s\n", t[inner], type_format);
- 	  						if(t[inner]=='0' && (strcmp(type_format,"2")==0))//) || strcmp(type_format,"1")!=0))
- 	  						{	
- 	  							while(1)
- 	  							{
- 	  								if (t[inner]=='\x3')
- 	  								{
- 	  									break;
- 	  								}
- 	  								inner++;	
- 	  							}
- 	  						}
- 	  						if(t[inner]=='1' && (strcmp(type_format,"1")==0))//|| strcmp(type_format,"3")!=0))
- 	  						{	
- 	  							while(1)
- 	  							{
- 	  								if (t[inner]=='\x3')
- 	  								{
- 	  									break;
- 	  								}
- 	  								inner++;	
- 	  							}
- 	  						}
- 	  						get_type=1;
- 	  					}
- 	  					else
- 	  					{
- 		  					if(t[inner] == '\x3') // assumes all will have \x3 line ending
-	 	  					{
-								n = write(new_socket,&t[inner],1);
-								if (n < 0) perror("ERROR writing to socket");	
- 	  							break;
- 	  						}
- 	  						//printf("curr->%c\n",t[inner]);
- 	  			 			n = write(new_socket,&t[inner],1);
-							if (n < 0) perror("ERROR writing to socket");
-							inner++;
-						}
- 	  				}
- 	  			}
- 	  			get_type = 0;
- 	  			out = inner + 1;
- 	  			if(t[out]=='\x4')
- 	  			{
 
- 	  				break;
- 	  			}
- 	  		}
- 	  		else
- 	  		{
- 	  			 	  			printf("Wrote successfully\n");
-
- 	  			break;
- 	  				
-  					while(1) { 
-	 					cr = fgetc(fp);
-	 					if (feof(fp)){
-							break;
-	 					}
-	 					n = write(new_socket,&cr,1);
-						if (n < 0) perror("ERROR writing to socket");	
- 	  							
- 					//printf("%c", c);
-					fputc(cr, wp);	
-  					}
-				   fclose(fp);
-  					fclose(wp);
-  					printf("Wrote successfully\n");
-					break;
- 	  		}
- 	  	}
 
 		delim = '\x4';
 		n = write(new_socket, &delim, 1);
 		if (n < 0) perror("ERROR writing to socket");
 
-    	printf("Closed Client Conncetion\n"); 
-
-
-	
-		memset(input_file_path,0,sizeof(input_file_path));	
-		memset(type_format,0,sizeof(type_format));	
-		memset(target_file_path,0,sizeof(target_file_path));	
-    	memset(buffer,0,sizeof(buffer));
-    	memset(t,0,sizeof(t));	
-	
-
+        int r = shutdown(new_socket,2);
+    	printf("Closed Client Connection\n\n"); 
     }    
     printf("\nClosing server");
     return 0; 
