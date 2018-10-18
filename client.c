@@ -38,19 +38,19 @@ int main(int argc, char const *argv[])
         printf("\n Socket creation error \n"); 
         return -1; 
     } 
-    printf("\nSocket:%d", sock);
+    //printf("\nSocket:%d", sock);
 
     memset(&server_addr, '0', sizeof(server_addr)); // resets server struct
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(server_port); // converts to network byte order
-    printf("\nServer port: %d", server_addr.sin_port);
+    //printf("\nServer port: %d", server_addr.sin_port);
 
     if(inet_pton(AF_INET, server_IP, &server_addr.sin_addr)<=0)  // converts IP addresses to binary form
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
     } 
-    printf("\nServer IP: %s", server_IP);
+   // printf("\nServer IP: %s", server_IP);
 
     if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) // attempts server connection
     { 
@@ -68,7 +68,7 @@ int main(int argc, char const *argv[])
     //printf("\nFinal Message: %s\n", message);
 
     send(sock, message, strlen(message), 0); //sends translation arguments
-    printf("\nSent arguments\n");
+    //printf("\nSent arguments\n");
     
     int valread;
     char buffer[MAX_STRING] = {0}; 
@@ -76,6 +76,8 @@ int main(int argc, char const *argv[])
     char tmp;
     int index;
     int n;
+    char* yes = "Success";
+    char* no = "Format error";
     while(1)
     {
         n = read(sock,&tmp,1);
@@ -100,7 +102,7 @@ int main(int argc, char const *argv[])
         //printf("Status: %s\n", buffer);
         if (strcmp(buffer,"1")==0)
         {
-            printf("Translation failed");
+            printf("%s\n", no);
             exit(0);
         }
         index = 0;
@@ -118,7 +120,7 @@ int main(int argc, char const *argv[])
         }
         break;
     }
-    printf("----Translation----:\n %s\n", buffer);
-    printf("\nQuitting...");
+    printf("\n%s\n", buffer);
+    printf("%s\n", yes);
     return 0; //quits
 } 
