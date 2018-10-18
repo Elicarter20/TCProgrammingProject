@@ -114,11 +114,10 @@ int main(int argc, char const *argv[])
         char max_size[4] = "1024";
         send(new_socket, max_size, strlen(max_size), 0); // send client-server primer
         int sw = 0;
-        printf("Fchecking format\n");
         while(1)
         {
             valread =read(new_socket, &tmp, 1);
-            //if (valread<0){ perror("ERROR reading from socket");}
+            if (valread<0){ perror("ERROR reading from socket");}
             if (tmp[0] == '\x4')
             {     
                   printf("Rejected contract\n");
@@ -129,11 +128,10 @@ int main(int argc, char const *argv[])
                   memset(rej,0,sizeof(rej));
                   sw = 1;
                   break;
-                  continue;//accept new clien
             }
              if (tmp[0] == '\x3')
             {         
-                printf("Received contract");
+                printf("Received Confirmation of format\n");
                 break;
             }
         }
@@ -141,8 +139,6 @@ int main(int argc, char const *argv[])
         {
             continue;
         }
-        printf("File follows rules\n");
-
         ack[0] = '\x1';
         rej[0] = '\x2';
 
@@ -161,26 +157,26 @@ int main(int argc, char const *argv[])
             strcat(contents,tmp);
            // printf("received: %s\n",tmp);
         }    
-        printf("Got and acknowledged all bytes: %s\n",contents );
+        printf("Received and Acknowledged all bytes");
         ack[0] = '\x5';
         rej[0] = '\x6';
 
-        int status = check_f(contents);
-        printf("status: %d\n", status);
-        if (status == 1)
+        int status = check_file(contents);
+        if (status< 0)
         {
             valwrite = write(new_socket, &rej, 1);
             if (valwrite < 0) perror("ERROR writing to socket");     
-            printf("Sent rejection!\n");                    
+            printf("Sent rejection\n");                    
             int r = shutdown(new_socket,2);
             printf("Closed Client Connection\n\n");
             memset(tmp,0,sizeof(tmp));
             continue;//accept new client
         }
+        printf("File status is OK\n");
         valwrite = write(new_socket, &ack, 1);
         if (valwrite < 0) perror("ERROR writing to socket");
-        printf("Contents are good!\n");
-        
+        //printf("Contents are good!\n");
+
         int switcher= 0;
         char type_format[MAX_STRING]="";
         char target_file_path[MAX_STRING]="";
@@ -211,8 +207,8 @@ int main(int argc, char const *argv[])
         }
         memset(tmp,0,sizeof(tmp));
 
-        printf("type: %s\n",type_format);   // determins translation
-        printf("target: %s\n",target_file_path); // write to this file
+      //  printf("type: %s\n",type_format);   // determins translation
+       // printf("target: %s\n",target_file_path); // write to this file
         ack[0] = '\x5';
         rej[0] = '\x6';
         if (strcmp(type_format,"0")!=0 &&strcmp(type_format,"1")!=0 &&strcmp(type_format,"2")!=0 &&strcmp(type_format,"3")!=0)
@@ -229,10 +225,10 @@ int main(int argc, char const *argv[])
         }
         valwrite = write(new_socket, &ack, 1);
         if (valwrite < 0) perror("ERROR writing to socket");
-        char* vals = get_v(contents);
-        printf("Values: %s\n",vals);
+        char* vals = get_values(contents);
+       // printf("Values: %s\n",vals);
         char* formatted = change_type(vals, type_format);
-        printf("Trans: %s\n",formatted);
+       // printf("Trans: %s\n",formatted);
 
         ack[0] = '\x2';
         rej[0] = '\x3';
@@ -253,6 +249,7 @@ int main(int argc, char const *argv[])
         } 
         valwrite = write(new_socket, &ack, 1);
         if (valwrite < 0) perror("ERROR writing to socket");
+        printf("Sent WRITE Confirmation\n");
         int r = shutdown(new_socket,2);
         printf("Closed Client Connection\n\n");
         memset(tmp,0,sizeof(tmp));

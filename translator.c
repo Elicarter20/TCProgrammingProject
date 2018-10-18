@@ -24,8 +24,9 @@
 
 int hex_convert(char* s)
 {
-  //printf("\nValue Input: %s\n", s);
+    //printf("\nValue Input: %s\n", s);
 	char amt[MAX_STRING] ="";
+	if(strlen(s) < 2){return -1;}
 	for (int i =0; i < strlen(s); i++)
 	{
 		////printf("\n%c", s[i]);
@@ -113,7 +114,7 @@ int hex_convert(char* s)
 		else
 		{
 			//printf("\nInvalid hex character: %c", s[i]);
-			exit(0);
+			return -1;
 		}
 	}
  // printf("\nBinary: %s\n",amt);	
@@ -135,12 +136,13 @@ int hex_convert(char* s)
 
 int ascii_convert(char* s)
 {
-  printf("\nValue Input:%s\n", s);
+   //printf("\nValue Input:%s\n", s);
 	char amt[MAX_STRING] ="";
   //printf("\n%d", strlen(s));
 	for (int i = 1; i < strlen(s); i=i+2)
 	{
 		////printf("\n%c", s[i]);
+		if (s[i-1]!='3'){return -1;}
 		if(s[i] == '0')
 		{
 			strcat(amt, "0");
@@ -200,7 +202,7 @@ int ascii_convert(char* s)
 		else
 		{
 			printf("\nInvalid ascii character: %c", s[i]);
-			//exit(0);
+			return -1;
 		}
 	}
   //printf("\nBinary: %s\n",amt);	
@@ -211,8 +213,8 @@ int type_convert(char* s)
 	////printf("Values: %s", s);
 	if (s[0] != '0' || s[1] != '0' && s[1] !='1')
 	{
-		//printf("\n Unknown Type \n");
-		exit(0);
+		printf("\n Unknown Type \n");
+		return -1;
 	}
 	if (s[1] == '0')
 	{
@@ -227,7 +229,7 @@ int type_convert(char* s)
 }
 
 
-char* get_v(char* contents) {
+char* get_values(char* contents) {
     //printf("\nvalues args: %s\n",contents );
     printf("\n");
     static char values[MAX_STRING]="";
@@ -247,14 +249,14 @@ char* get_v(char* contents) {
 	while(1)
 	{	
 		type_digits=2;
-		printf("current values: %s\n", values);
+		//printf("current values: %s\n", values);
 
 		while(type_digits > 0)
 		{
 			if(ascii_reset==0)
 			{
 				ascii_reset = 1;
-				printf("prev: %s\n",prev);
+			//	printf("prev: %s\n",prev);
 				strcat(num,prev);
 				type_digits--;
 			}
@@ -279,14 +281,14 @@ char* get_v(char* contents) {
 					continue;
 				}
 				strcat(num,curr);
-				printf("num: %s\n",num);
+			//	printf("num: %s\n",num);
 				type_digits--;
 				i++;
 			}
 		}
 
 		type = type_convert(num);
-		printf("Is Type: %d\n\n", type);
+	//	printf("Is Type: %d\n\n", type);
 		if (type == 0)
 		{
 			amt_length = 2; // # of bytes in amount
@@ -329,12 +331,12 @@ char* get_v(char* contents) {
 		{
 
 		 	amt = hex_convert(num);
-		 	printf("	Converted hex amt to: %s %d\n",num, amt);
+		 	//printf("Converted hex amt to: %s %d\n",num, amt);
 		}
 		else 
 		{
 		  	amt = ascii_convert(num);
-		  	printf("	Converted ascii amt to: %s %d\n",num, amt);
+		  	//printf("Converted ascii amt to: %s %d\n",num, amt);
 		}
 		strcat(values,"\x2");//start of value string	
 		sprintf(append,"%d",type); // put the int into a string
@@ -353,6 +355,7 @@ char* get_v(char* contents) {
 		}
 		while(amt > 0)
 		{
+			//printf("Top Amount: ---- %d\n", amt);
 			if(ascii_reset==0)
 			{
 				ascii_reset=1;
@@ -410,34 +413,32 @@ char* get_v(char* contents) {
 			}
 			else
 			{
-				//printf("curr: %s %s\n",curr,num);
-				if (curr[0] == 'c')
+				//printf("ascii curr: %s %s\n",curr,num);
+				//printf("previous: %c %c\n", num[strlen(num)-1], num[strlen(num)-2]);//I wrote current to NUM
+				if (num[strlen(num)-1] == 'c')
 				{
 					num[strlen(num)-2]='\0';
-					printf("comma DOING WITH NUM: %s\n",num);
+				//	printf("comma DOING WITH NUM: %s\n",num);
 					val = ascii_convert(num);
+				//	printf("Comma - Got value:%d\n",val);
 					sprintf(append,"%d",val);
 					strcat(values,append);
 					strcat(values,",");
 					amt--;
 					memset(append,0,sizeof(append));	//resets string
 		    		memset(num,0,sizeof(num));	//resets string
-
+		    		continue;
 				}
-				//3930 3 0 01  if at zero might mean start of new type
-				//   c i
-				printf("previous: %c %c\n", num[strlen(num)-2],curr[0]);//I wrote current to NUM
-				if(num[strlen(num)-2]!='3' && curr[0]=='0' )
+				if(num[strlen(num)-2]!='3' && curr[0]=='0' ) 
 				{	
-					printf("Testing: %s\n",num);
-					if (contents[i]!=0)
+				//	printf("	Suspicious:%s || %c %c %c\n",num, contents[i-1],contents[i],contents[i+1]);
+					if (contents[i]=='0' || contents[i] =='1')
 					{
-							printf("New Type\n");
-						    printf("num: %s\n",num);
+					//	    printf("	end of num: %s\n",num);
 							num[strlen(num)-1] ='\0';
 							ascii_reset=0;
 							val = ascii_convert(num);
-							printf("reset DOING WITH NUM: %s\n",num);
+						//	printf("reset DOING WITH NUM: %s\n",num);
 							sprintf(append,"%d", val);
 							strcat(values,append);
 							strcat(values,"\x3");
@@ -446,6 +447,7 @@ char* get_v(char* contents) {
 							memset(append,0,sizeof(append));
 							break;
 					}
+				//	printf("	Is okay\n");
 				} 
 
 			}
@@ -1178,111 +1180,6 @@ char* change_type(char* values, char* tf)
 	return result;
 }
 
-int check_f(char* contents)
-{
-	char c[2] = "\0";
-	int i = 1;
-	int get_type = 0;
-	int get_amount = 1;
-	int zero_or_one;  // zero -- 0 , one -- 1
-	int amount_chars; // chars for amount
-	int even_odd = 2;
-	if (strlen(contents) < 4)//based off min of type 0 and 1
-	{
-		printf("Contents too short\n");
-		return 1;
-	}
-	if(contents[0]!='0')//incorrect starting type
-	{
-		printf("Incorrect starting type\n");
-		return 1;
-	}
-	printf("Checking... %s\n", contents);
-	/*while(1) 
-		{ 
-			c[0] = contents[i]; // if here then should get type correctly
-			printf("curr: %c\n", c[0]);
-			if(i>=strlen(contents)-1)
-				{break;}
-	 		if (get_type == 0)
-	 		{
-	 			if (c[0]=='0')
-	 			{
-	 				zero_or_one = 0;
-	 				amount_chars = 2;
-	 			}
-	 			if (c[0]=='1')
-	 			{
-	 				zero_or_one = 1;
-	 				amount_chars= 6;
-	 				even_odd = 0;
-	 			}
-	 			else{;return 1;}
-	 			get_type = 1;
-	 			get_amount = 0;
-	 			printf("Type is: %d\n", zero_or_one);
-	 			i++;
-	 			continue;
-	 		}
-	 		if (get_amount == 0)
-	 		{
-	 			if (amount_chars == 0)
-	 			{
-	 				get_amount = 1;
-	 				even_odd = 2;
-	 				//printf("Got amount!");
-	 				i++;
-	 				continue;
-	 			}
-	 			if (even_odd == 2) // for HEX for type 0
-	 			{
-	 				if(c[0]!='0' && c[0]!='1' &&  c[0]!='2' &&  c[0]!='3' &&  c[0]!='4' 
-	 					&& c[0]!='5' && c[0]!='6' && c[0]!='7' && c[0]!='8'
-	 					 && c[0]!='9' && c[0]!='a' && c[0]!='b'&& c[0]!='c'
-	 					  && c[0]!='d' && c[0]!='e'&& c[0]!='f')
-	 				{
-	 					//printf("Here");
-	 					return 1;
-	 				}
-	 				amount_chars--;
-	 				i++;
-	 				continue;
-	 			}
-	 			if (even_odd == 0)// FOR ASCII type 1
-	 			{
-	 				if(c[0]!='3')
-	 				{
-	 					//printf("there");
-	 					return 1;
-	 				}
-	 				even_odd = 1;
-	 				amount_chars--;
-	 				i++;
-	 				continue;
-	 			}
-	 			if (even_odd == 1) // FOR ASCII type 1
-	 			{
-	 				if(c[0]!='0' && c[0]!='1' &&  c[0]!='2'  &&  c[0]!='3' 
-	 				  &&  c[0]!='4'  &&  c[0]!='5' && c[0]!='6' && c[0]!='7'  
-	 				  && c[0]!='8'  && c[0]!='9')
-	 				{
-	 					//printf("OR?");
-	 					return 1;
-	 				}
-	 				even_odd = 0;
-	 				amount_chars--;
-	 				i++;
-	 				continue;
-	 			}
-	 			
-				//printf("%d\n", amount_chars);
-	 		}
-	 		//break;
-	 	}*/
-	 	memset(c,0,sizeof(c));	
-    	return 0;
-}
-
 int do_write(char* trans, char* target)
 {
 	char c[2] = "\0";
@@ -1314,3 +1211,237 @@ int do_write(char* trans, char* target)
 	fclose(wp);
 	return 0;
 }
+
+
+
+int check_file(char* contents) {
+    //printf("\nvalues args: %s\n",contents );
+    printf("\n");
+    char num[MAX_STRING] = "";
+
+	char curr[2] = "\0";
+	char prev[2] = "\0";
+	
+	int val;
+	int type;
+	int type_digits = 2;
+	int num_length;
+	int amt_length;
+	int hex_ascii_switch;
+	int ascii_reset = 1;
+	int i = 0;
+	if (strlen(contents) < 4)//based off min of type 0 and 1
+	{
+		//printf("Contents too short\n");
+		return -1;
+	}
+	if(contents[0]!='0')//incorrect starting type
+	{
+		//printf("Incorrect starting type\n");
+		return -1;
+	}	
+	while(1)
+	{	
+		type_digits=2;
+		while(type_digits > 0)
+		{
+			if(ascii_reset==0)
+			{
+				ascii_reset = 1;
+				strcat(num,prev);
+				type_digits--;
+			}
+			else
+			{
+				if (i == strlen(contents)) // should be only successful
+				{
+					memset(num,0,sizeof(num));
+					memset(curr,0,sizeof(curr));
+					memset(prev,0,sizeof(prev));
+					return 0;
+				}
+				prev[0] = curr[0];
+				curr[0] = contents[i];
+				if (strcmp(curr, " ") == 0 ||  strcmp(curr,"\r")==0 || strcmp(curr,"\n")==0)
+				{
+					i++;
+					continue;
+				}
+				strcat(num,curr);
+				type_digits--;
+				i++;
+			}
+		}
+
+		type = type_convert(num);
+		if(type<0)
+		{
+		 	return -1;
+		}
+		//printf("Is Type: %d\n\n", type);
+		if (type == 0)
+		{
+			amt_length = 2; // # of bytes in amount
+			num_length = 4;// # of chars per num
+			hex_ascii_switch = 0;
+		}
+		if (type == 1)
+		{
+			amt_length = 6; // # of bytes in amount
+			hex_ascii_switch = 1;
+		}
+  		memset(num,0,sizeof(num));	
+  		while (amt_length>0)
+  		{
+  			if (i == strlen(contents)-1)
+			{
+				strcat(num,prev);	
+				if (hex_ascii_switch == 0)
+				{
+					val = hex_convert(num);
+					if(val<0)
+		 			{
+		 				return -1;
+		 			}
+				}
+				else
+				{
+					val = ascii_convert(num);
+					if(val<0)
+		 			{
+		 				return -1;
+		 			}
+				}
+				memset(num,0,sizeof(num));
+				memset(curr,0,sizeof(curr));
+				memset(prev,0,sizeof(prev));
+				return 0;
+			}
+			prev[0] = curr[0];
+  			curr[0] = contents[i];
+  			if (strcmp(curr, " ") == 0 ||  strcmp(curr,"\r")==0 || strcmp(curr,"\n")==0)
+			{
+				i++;
+				continue;
+			}
+			
+			strcat(num,curr);	
+			amt_length--;	
+			i++;
+  		}
+		int amt;
+		if (hex_ascii_switch == 0)
+		{
+
+		 	amt = hex_convert(num);
+		 	if(amt<0 || i >= strlen(contents))
+		 	{
+		 		return -1;
+		 	}
+		}
+		else 
+		{
+		  	amt = ascii_convert(num);
+		  	if(amt<0 || i >= strlen(contents))
+		 	{
+		 		return -1;
+		 	}
+		}
+		memset(num,0,sizeof(num));	
+		int char_counter = 0;
+		if(amt == 0)
+		{
+			//strcat(values, "\x3");
+		}
+		while(amt > 0)
+		{
+			if(ascii_reset==0)
+			{
+				ascii_reset=1;
+			}
+			else
+			{
+				prev[0] = curr[0];
+				curr[0] = contents[i];
+			}
+			
+			if (i == strlen(contents))
+			{
+				val = ascii_convert(num);
+				if(val<0)
+		 		{
+		 			return -1;
+		 		}
+				memset(num,0,sizeof(num));
+				memset(curr,0,sizeof(curr));
+				memset(prev,0,sizeof(prev));
+				return 0;
+			}
+			prev[0] = curr[0];
+			curr[0] = contents[i];
+			if (strcmp(curr, " ") == 0 ||  strcmp(curr,"\r")==0 || strcmp(curr,"\n")==0)
+			{
+				i++;
+				continue;
+			}
+			char_counter++;
+			strcat(num,curr);
+			i++;
+			if(hex_ascii_switch==0)
+			{
+				if (char_counter==num_length)
+				{
+					val = hex_convert(num);
+					if(val<0)
+		 			{
+		 				return -1;
+		 			}
+					char_counter = 0;
+					amt--;
+					if(amt==0)
+					{
+					//	strcat(values,"\x3");
+					}
+					else
+					{
+					//	strcat(values,",");
+					}
+				 	memset(num,0,sizeof(num));	//resets string
+				}				
+			}
+			else
+			{
+				if (num[strlen(num)-1] == 'c')
+				{
+					num[strlen(num)-2]='\0';
+					val = ascii_convert(num);
+				  	if(val<0)
+		 			{
+		 				return -1;
+		 			}	
+					amt--;
+		    		memset(num,0,sizeof(num));	//resets string
+		    		continue;
+				}
+				if(num[strlen(num)-2]!='3' && curr[0]=='0' ) 
+				{	
+					if (contents[i]=='0' || contents[i] =='1')
+					{
+							num[strlen(num)-1] ='\0';
+							ascii_reset=0;
+							val = ascii_convert(num);
+							if(val<0)
+		 					{
+		 						return -1;
+		 					}
+							amt--;
+							memset(num,0,sizeof(num));
+							break;
+					}
+				} 
+
+			}
+		}
+	}
+	return 0;
+ }
