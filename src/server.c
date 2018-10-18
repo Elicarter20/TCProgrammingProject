@@ -6,34 +6,8 @@
 #include <netinet/in.h> 
 #include <string.h> 
 #include "translator.h"
-
-//#define PORT 8080
 #define MAX_STRING 1024
 
-
-
-// -- Monday --
-//translation send and receive
-// send status and message, now just reformat
-// fix the typing tranlsation!
-
-// -- Tuesday --
-//define application protocol!!!!!!
-//message size...send 
-//send preliminary message, and how subsequent messages sent
-
-//  Yeah maybe to initiate communication you send a 8bytes indicating the size of the message the client wants to send. 
-//But it's more than just the starter message. 
-//Maybe the protocol specifies the server sends each word one at a time. 
-//Or each word separated by an underscore.
-//Or it asks for confirmation from the server after each sent word. Or 10 words at a time 
-
-// -- Wednesday --
-// Do test cases, perfect translation
-
-//ACTUALLLY DO A CLOSE!
-//can make strings args constant should make
-// finish 
 
 int main(int argc, char const *argv[]) 
 { 

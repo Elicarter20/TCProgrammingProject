@@ -7,21 +7,6 @@
 #define SIZE 32
 #define MAX_STRING 1024
 
-
-//if 0, do no translation!
-//if 1, tranlsate only type 0s
-//if 2, translate only type 1s
-//if 3, translate both
-// (\x2)01,225,39(\x3)(\x2)11,24(\x3)(\x4)
-
-//1.) do writing! with perfect case DONE!
-//2.) do file checking (ex. check if ascii is greater than  2147483647 (check atoi of value!))
-		// ^^^ IS VERY HARD DO LATER!!!
-//3.) then do server client fixes new delimeters! (DONE!)
-//4.) fix file non existant socketing....
-
-//CHECK THOSE MULTIPLE CASES!!!
-
 int hex_convert(char* s)
 {
     //printf("\nValue Input: %s\n", s);

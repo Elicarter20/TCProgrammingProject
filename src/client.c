@@ -7,19 +7,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <time.h>
-//#define PORT 8080 
 #define MAX_STRING 1024
-
-// 1. Client sends primer - 1 byte
-// 2. Client receives ACK - 1 byte
-//skipp 3. Server sends num of digits and size of contents limits- 
-// skp 4. Client acks or rejects it
-// 5. Client sends 1 byte of file each - 1 byte
-// 6. Server sends ack for every byte of file sure? - 1 byte
-// 7. On server, check units! send ack or reject
-// 8. If got ack, client send type format and target
-// 9 . Server checks those and sends rejection, else translate it all
-// 10. After write, send confirmation
 
 int main(int argc, char const *argv[]) 
 { 
@@ -181,12 +169,11 @@ int main(int argc, char const *argv[])
         if(tmp[0]=='\x6')
         {
             printf("Format Error");
-            exit(0);
+            return 0;
         }
         if(tmp[0]=='\x5')
         {
             break;
-            exit(0);
         }
     }
     //printf("\nGood File Status!");
