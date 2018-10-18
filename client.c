@@ -10,9 +10,19 @@
 //#define PORT 8080 
 #define MAX_STRING 1024
 
+// 1. Client sends primer - 1 byte
+// 2. Client receives ACK - 1 byte
+//skipp 3. Server sends num of digits and size of contents limits- 
+// skp 4. Client acks or rejects it
+// 5. Client sends 1 byte of file each - 1 byte
+// 6. Server sends ack for every byte of file sure? - 1 byte
+// 7. On server, check units! send ack or reject
+// 8. If got ack, client send type format and target
+// 9 . Server checks those and sends rejection, else translate it all
+// 10. After write, send confirmation
+
 int main(int argc, char const *argv[]) 
 { 
-
     char server_IP[MAX_STRING]; 
     strcpy(server_IP,argv[1]); // IP address of server
     
@@ -38,12 +48,12 @@ int main(int argc, char const *argv[])
         printf("\n Socket creation error \n"); 
         return -1; 
     } 
-    //printf("\nSocket:%d", sock);
+   // printf("\nSocket:%d", sock);
 
     memset(&server_addr, '0', sizeof(server_addr)); // resets server struct
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(server_port); // converts to network byte order
-    //printf("\nServer port: %d", server_addr.sin_port);
+   // printf("\nServer port: %d", server_addr.sin_port);
 
     if(inet_pton(AF_INET, server_IP, &server_addr.sin_addr)<=0)  // converts IP addresses to binary form
     { 
@@ -57,70 +67,190 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n"); 
         return -1; 
     } 
-
     //have used server_IP AND server_port
-    char message[MAX_STRING];
-    strcat(message, input_file_path);
-    strcat(message, "\x1");
-    strcat(message, type_format);
-    strcat(message, "\x1");
-    strcat(message, target_file_path);
-    //printf("\nFinal Message: %s\n", message);
+     
+    char tmp[2] = "\0";
+    int  valread;
+    int valwrite;
 
-    send(sock, message, strlen(message), 0); //sends translation arguments
-    //printf("\nSent arguments\n");
-    
-    int valread;
-    char buffer[MAX_STRING] = {0}; 
+    char msg[2] = "\x2";
+    send(sock, msg, strlen(msg), 0); // send client-server primer
+    //printf("\nSent primer\n");
+    //READ file contents then send to server
+    valread = read(sock, &tmp, 1);
+    if (valread<0){ perror("ERROR reading from socket");}
+    if(tmp[0]!='\x3')
+    {
+        printf("Faulty server\n");
+        perror("Faulty server\n");
+        return 0;
+    }
+   // printf("Received server ACK\n");
+     
+    FILE* fp;
+    fp = fopen(argv[3], "r");
+    if( access( input_file_path, F_OK ) != -1 )
+    {
+       // printf("Attempting...\n");
+        // printf("Opened file");
+        tmp[0]='\0';
+        int size = 0;
+        while(1)
+        {
+            tmp[0] = fgetc(fp);
+            if (feof(fp))
+            {
+                break;
+            }
+            if (tmp[0]== ' ' || tmp[0]=='\r'||tmp[0]=='\n'){continue;}
+            size++;
+        }
+        //printf("File size is...%d\n", size);
+        char z[32];
+        sprintf(z,"%d",size);
+        char digits_max[2]="\0";
+        valread = read(sock, &digits_max, 1);
+        if (valread<0){ perror("ERROR reading from socket");}       
+        char max[MAX_STRING]="\0";
+        valread = read(sock, &max, 4);
+        if (valread<0){ perror("ERROR reading from socket");}   
+        //printf("max: %s File size is...%s vs %s\n", digits_max, z, max);
+        if (strlen(z) > atoi(digits_max) || atoi(z) >atoi(max))
+        {
+            tmp[0]='\x4';
+            valwrite = write(sock, &tmp, 1);
+            if (valwrite < 0) perror("ERROR writing to socket"); 
+           // printf("Incompatible File\n");
+            printf("Format error");
+            return 0;
+        }
+            tmp[0]='\x3';
+            valwrite = write(sock, &tmp, 1);
+            if (valwrite < 0) perror("ERROR writing to socket"); 
+            //printf("File is compatible!");
+    }
+    else
+    {
+        tmp[0]='\x4';
+        valwrite = write(sock, &tmp, 1);
+       // printf("File is incompatible\n");
+        printf("Format error");
+        return 0;
+    }
 
-    char tmp;
-    int index;
-    int n;
-    char* yes = "Success";
-    char* no = "Format error";
+   // return 0;
+    tmp[0]='\0';
+    memset(tmp,0,sizeof(tmp));
+    fp = fopen(argv[3], "r");
+    //printf("Opened file");
+    while(1) 
+    { 
+        tmp[0] = fgetc(fp);
+        if (feof(fp))
+        {
+            tmp[0]='\x4';
+            valwrite = write(sock, &tmp, 1);
+            if (valwrite < 0) perror("ERROR writing to socket");                         
+           //printf("Reached end of file");
+            fclose(fp);
+            break;
+        }
+        if (tmp[0]== ' ' || tmp[0]=='\r'||tmp[0]=='\n'){continue;}
+        valwrite = write(sock, &tmp, 1);
+        if (valwrite < 0) perror("ERROR writing to socket");                         
+        while(1)// get ack for sent byte
+        {
+            valread = read(sock, &tmp, 1);
+            if (valread<0){ perror("ERROR reading from socket");} 
+            if (tmp[0]=='\x2')
+            {
+                printf("Not ACKed\n");
+                perror("Faulty Server\n");
+                return 0;
+            }
+            else{break;}
+        }
+        //printf("sent and got acknowledgement: %c\n",c[0]);
+    }
+    //printf("\nSent file contents and got ACKS!\n");
+    memset(tmp,0,sizeof(tmp));
     while(1)
     {
-        n = read(sock,&tmp,1);
-        if (n<0) {perror("ERROR reading from socket");}
-        if (tmp != '\x2')
+        valread = read(sock, &tmp,1);
+       // printf("test: %c\n",tmp[0]);           
+        if (valread<0){ perror("ERROR reading from socket");}
+        if(tmp[0]=='\x6')
         {
-            //prevents furhtering of client until get confirmation
-            continue;
-        }
-        index=0;
-        while(1)
-        {
-            n =read(sock, &tmp, 1);
-            if (n<0){ perror("ERROR reading from socket");}
-            //printf("curr: %c\n",tmp);
-            if (tmp == '\x3')
-                break;
-            // TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
-            buffer[index] = tmp;
-            index++;
-        }
-        //printf("Status: %s\n", buffer);
-        if (strcmp(buffer,"1")==0)
-        {
-            printf("%s\n", no);
+            printf("Format Error");
             exit(0);
         }
-        index = 0;
-        memset(buffer,0,sizeof(buffer));
-        while(1)
+        if(tmp[0]=='\x5')
         {
-            n =read(sock, &tmp, 1);
-            //printf("curr: %c\n",tmp);
-            if (n<0){ perror("ERROR reading from socket");}
-            if (tmp == '\x4') break;
-            // TODO: if the buffer's capacity has been reached, either reallocate the buffer with a larger size, or fail the operation...
-            //printf("Message: %s\n", buffer);
-            buffer[index] = tmp;
-            index++;
+            break;
+            exit(0);
         }
-        break;
     }
-    printf("\n%s\n", buffer);
-    printf("%s\n", yes);
-    return 0; //quits
+    //printf("\nGood File Status!");
+
+    memset(tmp,0,sizeof(tmp));
+    int get_type;
+    char append[MAX_STRING] = "";
+
+    for(int i = 0; i<strlen(argv[4]);i++)   
+    {
+        tmp[0]=argv[4][i];
+        strcat(append,tmp);
+    }
+    tmp[0]='\x2';
+    strcat(append,tmp);
+    for(int i = 0; i<strlen(argv[5]);i++)   
+    {
+        tmp[0]=argv[5][i];
+        strcat(append,tmp);
+    }
+    tmp[0]='\x3';
+    strcat(append,tmp);
+    for(int i = 0; i<strlen(append);i++)   
+    {
+        tmp[0]=append[i];
+        valwrite = write(sock, &tmp, 1);
+        if (valwrite < 0) perror("ERROR writing to socket");      
+    }
+    memset(append,0,sizeof(append));
+    memset(tmp,0,sizeof(tmp));
+    //printf("Sent arguments!");
+    while(1)
+    {
+        valread = read(sock, &tmp,1);
+        if (valread<0){ perror("ERROR reading from socket");}
+        if(tmp[0]=='\x6')
+        {
+            printf("Format Error");
+            exit(0);
+        }
+        if(tmp[0]=='\x5')
+        {
+            break;
+        }
+    }
+    //printf("Type is alright\n");
+
+    while(1)
+    {
+        valread = read(sock, &tmp,1);
+        if (valread<0){ perror("ERROR reading from socket");}
+        if(tmp[0]=='\x3')
+        {
+            printf("Format Error");
+            exit(0);
+        }
+        if(tmp[0]=='\x2')
+        {
+            printf("Success");
+            break;
+        }
+    }
+    memset(append,0,sizeof(append));
+    memset(tmp,0,sizeof(tmp)); 
+    return 0;
 } 

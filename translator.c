@@ -20,6 +20,8 @@
 //3.) then do server client fixes new delimeters! (DONE!)
 //4.) fix file non existant socketing....
 
+//CHECK THOSE MULTIPLE CASES!!!
+
 int hex_convert(char* s)
 {
   //printf("\nValue Input: %s\n", s);
@@ -133,7 +135,7 @@ int hex_convert(char* s)
 
 int ascii_convert(char* s)
 {
-  //printf("\nValue Input:%s", s);
+  printf("\nValue Input:%s\n", s);
 	char amt[MAX_STRING] ="";
   //printf("\n%d", strlen(s));
 	for (int i = 1; i < strlen(s); i=i+2)
@@ -197,8 +199,8 @@ int ascii_convert(char* s)
 		}
 		else
 		{
-			//printf("\nInvalid ascii character: %c", s[i]);
-			exit(0);
+			printf("\nInvalid ascii character: %c", s[i]);
+			//exit(0);
 		}
 	}
   //printf("\nBinary: %s\n",amt);	
@@ -224,261 +226,235 @@ int type_convert(char* s)
 	}
 }
 
-char* get_values(char* input) {
-    //printf("Arguments: %s\n",input );
-	FILE *fp;
-	char s[MAX_STRING] = "";
+
+char* get_v(char* contents) {
+    //printf("\nvalues args: %s\n",contents );
+    printf("\n");
+    static char values[MAX_STRING]="";
+    char num[MAX_STRING] = "";
 	char append[MAX_STRING] = "";
- 	static char ret[MAX_STRING]="";
-	char c[2] = "\0";
-	char b[3] = "\0";
+
+	char curr[2] = "\0";
+	char prev[2] = "\0";
+
 	int type;
-	int type_counter = 2;
-	int amount = 0;
-	int  num_counter = 0;
-	int hex_ascii_switch = 0;
+	int type_digits = 2;
+	int num_length;
+	int amt_length;
+	int hex_ascii_switch;
 	int ascii_reset = 1;
-	fp = fopen(input, "r");
+	int i = 0;
+	while(1)
+	{	
+		type_digits=2;
+		printf("current values: %s\n", values);
 
-while(1)
-{
-	strcat(ret,"\x2"); // start delimeter for result
-	while (type_counter>0)
-	{
-		if (ascii_reset == 0)
-  	{
-  //		printf("\nDoing Reset\n");
-  //		printf("\n Type[0]: %s", b);
-  //		printf("\nType[1]: %s", c);
-  	//strcpy(c,d);
-  		ascii_reset = 1;
-  		strcat(s,b);
-  		 // c[0] = fgetc(fp);
-
-  		 strcat(s,c);
-  		 type_counter = type_counter - 2;
-
-  	}
-  	else
-  	{
-
-  		c[0] = fgetc(fp);
-	  // printf("\n---%c",c[0]);
-
-		if (strcmp(c, " ") == 0 ||  strcmp(c,"\r")==0 || strcmp(c,"\n")==0)
+		while(type_digits > 0)
 		{
-			continue;
-		}
-		if (feof(fp)){
-			//printf("\nReached end of file 1");
-			strcat(ret,"\x3");
-			strcat(ret,"\x4");
-			memset(s,0,sizeof(s));
-
-			fclose(fp);	//close file pointers
-		//	printf("\nBUFFER: %s\n: ", ret);
-			//printf("\nWrote successfully\n");
-	 		return ret;
-	 }
-	 	strcat(s,c);
-		type_counter--;
-		  	}
-	}
-	
-
-   //printf("\nType String: %s\n",s);	
-
-	type = type_convert(s);
-	if (type == 0)
-	{
-		amount = 2; // # of bytes in amount
-		num_counter = 4;// # of chars per num
-		hex_ascii_switch = 0;
-	}
-	if (type == 1)
-	{
-		amount = 6; // # of bytes in amount
-		hex_ascii_switch = 1;
-	}
-  memset(s,0,sizeof(s));	
-  while (amount > 0)
-	{
-		c[0] = fgetc(fp);
-		if (strcmp(c, " ") == 0 ||  strcmp(c,"\r")==0 || strcmp(c,"\n")==0)
-		{
-			continue;
-		}
-		if (feof(fp)){
-			//printf("\nReached end of file 2");
-			memset(s,0,sizeof(s));
-			strcat(ret,"\x3");
-			strcat(ret,"\x4");
-			fclose(fp);	//close file pointers
-		//printf("\nBUFFER: %s\n: ", ret);
-		//	printf("\nWrote successfully\n");
-		 	return ret;
-	 }
-	 	strcat(s,c);
-	 	//printf("\nstring: %s\n",s);	
-		amount--;
-	}
- 	//printf("\nAmount String: %s",s);	
-	int act_amount = 0;
-	if (hex_ascii_switch == 0)
-	{
-		 act_amount = hex_convert(s);
-	}
-	else 
-	{
-		  act_amount = ascii_convert(s);
-	}
-
-    //printf("\nActual Amount: %d\n", act_amount);
-    //printf("\n 0%d ", act_amount);	
-    sprintf(append,"%d",type); // put the int into a string
-    strcat(ret, append);
-    //strcat(ret, "-");
-    sprintf(append,"%d",act_amount); // put the int into a string
-    strcat(ret, append);
-    strcat(ret, ",");
-
-	memset(s,0,sizeof(s));	
-
-	int char_counter = 0;
-	int value = 0;
-	int curr = 0;
-	if(act_amount == 0)
-	{
-		strcat(ret, "\x3");
-	}
-  while (act_amount > 0)
-  {
-  	if (ascii_reset == 0)
-  	{
-  		//strcpy(c,d);
-  	//	printf("\nDoing ascii value reset -- wrong prediciton\n");
-  //			printf("\n before[0]: %s\n", b);
-  	//	printf("current[0]: %s\n", c);	
-  		//strcat(s,b);
-  		//strcat(s,c);
-  		ascii_reset = 1;
-  	}
-  	else
-  	{
-  		c[0] = fgetc(fp);
-  	}
-
-		if (strcmp(c, " ") == 0 || strcmp(c,"\r")==0 || strcmp(c,"\n")==0) //?FIX THIS NEWLINE
-		{
-			continue;
+			if(ascii_reset==0)
+			{
+				ascii_reset = 1;
+				printf("prev: %s\n",prev);
+				strcat(num,prev);
+				type_digits--;
+			}
+			else
+			{
+				if (i == strlen(contents))
+				{
+					strcat(values,"\x3");
+					strcat(values,"\x4");
+					memset(num,0,sizeof(num));
+					memset(append,0,sizeof(num));
+					memset(curr,0,sizeof(curr));
+					memset(prev,0,sizeof(prev));
+					return values;
+				}
+				prev[0] = curr[0];
+				curr[0] = contents[i];
+				//printf("current: %s\n",curr);
+				if (strcmp(curr, " ") == 0 ||  strcmp(curr,"\r")==0 || strcmp(curr,"\n")==0)
+				{
+					i++;
+					continue;
+				}
+				strcat(num,curr);
+				printf("num: %s\n",num);
+				type_digits--;
+				i++;
+			}
 		}
 
-		if (feof(fp))
+		type = type_convert(num);
+		printf("Is Type: %d\n\n", type);
+		if (type == 0)
 		{
-	 		value = ascii_convert(s);
-    	    //printf("%d", value);
-			sprintf(append,"%d",value); // put the int into a string
-    		strcat(ret, append);
-    		strcat(ret,"\x3"); // end delimeter for result
-			strcat(ret,"\x4"); // end delimeter for all output
-	 		act_amount--;
-	  	    memset(s,0,sizeof(s));
-			//printf("\nReached end of file 3");
-			fclose(fp);	//close file pointers
-			//printf("\nBUFFER:\n %s\n: ", ret);
-		//	printf("\nWrote successfully\n");
-	 		return ret;
-	 }
-
-	 char_counter++;
-//	 printf("\n---%c",c[0]);
-	 strcat(s,c);
-	 curr++;
-
-
-   ////printf("\nChars: %d", char_counter);
-
-   //hex check
-  if(hex_ascii_switch==0)
-  {
-	 if(char_counter == num_counter) // when have (types 0's) num characters
-	 {
-	    //printf("\nValue: %s\n",s);	
-		value = hex_convert(s);
-	 	//printf("%d,", value);
-  		sprintf(append,"%d",value); // put the int into a string
-    	strcat(ret, append);
-	 	char_counter = 0;   // reset counter
-	 	act_amount--;        // decrese number amount
-	 	if(act_amount==0)
-	 	{
-	 		strcat(ret,"\x3");
-	 	}
-	 	else
-	 	{
-	 		strcat(ret, ",");
-
-	 	}
-	 	memset(s,0,sizeof(s));	//resets string
-	 	//printf("\ndecrease amount: %d\n", act_amount);
-	 }
-	}
-	else
-	{
-	 if(c[0] == 'c' ) //hOW ENTER 
-	 {
-	 	// printf("\nGot number: %s", s);
-	 	value = ascii_convert(s);
-	 // printf("\nConverted: %d", value);
-    	//printf("%d,", value);
-      sprintf(append,"%d",value); // put the int into a string
-    	strcat(ret, append);
-		strcat(ret, ",");
-
-	 	act_amount--;
-	  memset(s,0,sizeof(s));	//resets string
-	 	//printf("\nAmount: %d", act_amount);
-	 }
-	 if (c[0] == '0'  && s[strlen(s)-2] != '3')
-	 {
-	 	//printf("\nPrints ONCEEEE: %c\n",  s[strlen(s)-2]);
-
-	 	strcpy(b,c);//copy whats before
-	 	c[0] =fgetc(fp); // get next character and check if is continu
-	 	//printf("\nReading: %s\n",c);
-	 	ascii_reset = 0;
-		if (strcmp(c,"\r")==0 || strcmp(c,"\n")==0)
-		{
-				 //printf("\nJumping Line\n");
-
-		  c[0] = fgetc(fp);
-		  c[0] = fgetc(fp);
-			//printf("\nSkip to reading: %s\n",c );
+			amt_length = 2; // # of bytes in amount
+			num_length = 4;// # of chars per num
+			hex_ascii_switch = 0;
 		}
-		if (strcmp(c," ")==0)
+		if (type == 1)
 		{
-		  c[0] = fgetc(fp);
-			//printf("\nSkip to reading: %s\n",c );
+			amt_length = 6; // # of bytes in amount
+			hex_ascii_switch = 1;
 		}
-    //printf("Needs reset: %s", c);
-	 	if (strcmp(c,"1")==0 || strcmp(c,"0")==0)//if is end of ASCII, translate
-	 	{
-	 	value = ascii_convert(s);
-    	//printf("%d", value);
-    	sprintf(append,"%d",value); // put the int into a string
-    	strcat(ret, append);
-		strcat(ret, "\x3");
-	 	act_amount--;
-	  	memset(s,0,sizeof(s));	
-	  	//printf("\nEnd of ASCII\n");
-	 	}
-	
-	 }
+  		memset(num,0,sizeof(num));	
+  		while (amt_length>0)
+  		{
+  			if (i == strlen(contents))
+			{
+				strcat(values,"\x3");
+				strcat(values,"\x4");
+				memset(num,0,sizeof(num));
+				memset(append,0,sizeof(num));
+				memset(curr,0,sizeof(curr));
+				memset(prev,0,sizeof(prev));
+				return values;
+			}
+			prev[0] = curr[0];
+  			curr[0] = contents[i];
+  			if (strcmp(curr, " ") == 0 ||  strcmp(curr,"\r")==0 || strcmp(curr,"\n")==0)
+			{
+				i++;
+				continue;
+			}
+			
+			strcat(num,curr);	
+			amt_length--;	
+			i++;
+			//printf("current: %d\n",amt_length);
+  		}
+		int amt;
+		if (hex_ascii_switch == 0)
+		{
+
+		 	amt = hex_convert(num);
+		 	printf("	Converted hex amt to: %s %d\n",num, amt);
+		}
+		else 
+		{
+		  	amt = ascii_convert(num);
+		  	printf("	Converted ascii amt to: %s %d\n",num, amt);
+		}
+		strcat(values,"\x2");//start of value string	
+		sprintf(append,"%d",type); // put the int into a string
+    	strcat(values, append);
+    	sprintf(append,"%d",amt); // put the int into a string
+    	strcat(values, append);	
+    	strcat(values, ",");
+		memset(num,0,sizeof(num));	
+		memset(append,0,sizeof(append));	
+
+		int char_counter = 0;
+		int val;
+		if(amt == 0)
+		{
+			strcat(values, "\x3");
+		}
+		while(amt > 0)
+		{
+			if(ascii_reset==0)
+			{
+				ascii_reset=1;
+			}
+			else
+			{
+				prev[0] = curr[0];
+				curr[0] = contents[i];
+			}
+			
+			if (i == strlen(contents))
+			{
+
+				val = ascii_convert(num);
+				sprintf(append,"%d",val); 
+				strcat(values, append);
+				strcat(values,"\x3");
+				strcat(values,"\x4");
+				memset(num,0,sizeof(num));
+				memset(append,0,sizeof(num));
+				memset(curr,0,sizeof(curr));
+				memset(prev,0,sizeof(prev));
+				return values;
+			}
+			prev[0] = curr[0];
+			curr[0] = contents[i];
+			if (strcmp(curr, " ") == 0 ||  strcmp(curr,"\r")==0 || strcmp(curr,"\n")==0)
+			{
+				i++;
+				continue;
+			}
+			char_counter++;
+			strcat(num,curr);
+			i++;
+			if(hex_ascii_switch==0)
+			{
+				if (char_counter==num_length)
+				{
+					val = hex_convert(num);
+					sprintf(append,"%d",val);
+					strcat(values,append);
+					char_counter = 0;
+					amt--;
+					if(amt==0)
+					{
+						strcat(values,"\x3");
+					}
+					else
+					{
+						strcat(values,",");
+					}
+					memset(append,0,sizeof(append));	//resets string
+				 	memset(num,0,sizeof(num));	//resets string
+				}				
+			}
+			else
+			{
+				//printf("curr: %s %s\n",curr,num);
+				if (curr[0] == 'c')
+				{
+					num[strlen(num)-2]='\0';
+					printf("comma DOING WITH NUM: %s\n",num);
+					val = ascii_convert(num);
+					sprintf(append,"%d",val);
+					strcat(values,append);
+					strcat(values,",");
+					amt--;
+					memset(append,0,sizeof(append));	//resets string
+		    		memset(num,0,sizeof(num));	//resets string
+
+				}
+				//3930 3 0 01  if at zero might mean start of new type
+				//   c i
+				printf("previous: %c %c\n", num[strlen(num)-2],curr[0]);//I wrote current to NUM
+				if(num[strlen(num)-2]!='3' && curr[0]=='0' )
+				{	
+					printf("Testing: %s\n",num);
+					if (contents[i]!=0)
+					{
+							printf("New Type\n");
+						    printf("num: %s\n",num);
+							num[strlen(num)-1] ='\0';
+							ascii_reset=0;
+							val = ascii_convert(num);
+							printf("reset DOING WITH NUM: %s\n",num);
+							sprintf(append,"%d", val);
+							strcat(values,append);
+							strcat(values,"\x3");
+							amt--;
+							memset(num,0,sizeof(num));
+							memset(append,0,sizeof(append));
+							break;
+					}
+				} 
+
+			}
+		}
 	}
-  }
-  type_counter = 2;
+	return values;
  }
-}
+
+
  char* int2bin(int n)
  {		//source https://www.quora.com/Is-there-a-function-in-C-that-converts-an-integer-into-bits
         // determine the number of bits needed ("sizeof" returns bytes)
@@ -1202,34 +1178,32 @@ char* change_type(char* values, char* tf)
 	return result;
 }
 
-
-int check_file(char* input_file)
+int check_f(char* contents)
 {
-	//printf("Checking... %s\n", input_file);
-	char append[MAX_STRING] = "";
 	char c[2] = "\0";
-	int i = 0;
-
-
+	int i = 1;
 	int get_type = 0;
 	int get_amount = 1;
 	int zero_or_one;  // zero -- 0 , one -- 1
 	int amount_chars; // chars for amount
 	int even_odd = 2;
-	if( access( input_file, F_OK ) != -1 ) 
+	if (strlen(contents) < 4)//based off min of type 0 and 1
 	{
-		FILE* fp;
-		fp = fopen(input_file, "r");
-		c[0] = fgetc(fp);
-		if (c[0]!='0')
-		{
-			//printf("Incorrect pre-0 at type\n");
-			return 1;
-		}
-		while(1) 
+		printf("Contents too short\n");
+		return 1;
+	}
+	if(contents[0]!='0')//incorrect starting type
+	{
+		printf("Incorrect starting type\n");
+		return 1;
+	}
+	printf("Checking... %s\n", contents);
+	/*while(1) 
 		{ 
-			c[0] = fgetc(fp); // if here then should get type correctly
-	 		if (feof(fp)){break;}
+			c[0] = contents[i]; // if here then should get type correctly
+			printf("curr: %c\n", c[0]);
+			if(i>=strlen(contents)-1)
+				{break;}
 	 		if (get_type == 0)
 	 		{
 	 			if (c[0]=='0')
@@ -1243,20 +1217,21 @@ int check_file(char* input_file)
 	 				amount_chars= 6;
 	 				even_odd = 0;
 	 			}
+	 			else{;return 1;}
 	 			get_type = 1;
 	 			get_amount = 0;
-	 			//printf("Type is: %d\n", zero_or_one);
+	 			printf("Type is: %d\n", zero_or_one);
+	 			i++;
 	 			continue;
 	 		}
 	 		if (get_amount == 0)
 	 		{
-				//printf("%c %d\n", c[0], even_odd);
-	 			//printf("%d\n", even_odd);
 	 			if (amount_chars == 0)
 	 			{
 	 				get_amount = 1;
 	 				even_odd = 2;
 	 				//printf("Got amount!");
+	 				i++;
 	 				continue;
 	 			}
 	 			if (even_odd == 2) // for HEX for type 0
@@ -1270,6 +1245,7 @@ int check_file(char* input_file)
 	 					return 1;
 	 				}
 	 				amount_chars--;
+	 				i++;
 	 				continue;
 	 			}
 	 			if (even_odd == 0)// FOR ASCII type 1
@@ -1281,6 +1257,7 @@ int check_file(char* input_file)
 	 				}
 	 				even_odd = 1;
 	 				amount_chars--;
+	 				i++;
 	 				continue;
 	 			}
 	 			if (even_odd == 1) // FOR ASCII type 1
@@ -1294,24 +1271,16 @@ int check_file(char* input_file)
 	 				}
 	 				even_odd = 0;
 	 				amount_chars--;
+	 				i++;
 	 				continue;
 	 			}
 	 			
 				//printf("%d\n", amount_chars);
 	 		}
 	 		//break;
-			//printf("%s ", c);
-	 	}
-	 	memset(append,0,sizeof(append));	
+	 	}*/
 	 	memset(c,0,sizeof(c));	
-	 	fclose(fp);
     	return 0;
-	} 
-	else 
-	{
-		memset(c,0,sizeof(c));	
-    	return 1;
-	}
 }
 
 int do_write(char* trans, char* target)

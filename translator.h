@@ -16,9 +16,8 @@
 #include <unistd.h>
 #include <errno.h>
 
-char* get_values(char* input);
-int check_file(char* input);
+char* get_v(char* contents);
 char* change_type(char* values, char* tf);
 int do_write(char* trans, char* target);
-
+int check_f(char* contents);
 #endif /* TRANSLATOR_H */
