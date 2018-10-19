@@ -98,11 +98,7 @@ int main(int argc, char const *argv[])
         char digits_max[2]="\0";
         valread = read(sock, &digits_max, 1);
         if (valread<0){ perror("ERROR reading from socket");}       
-        char max[MAX_STRING]="\0";
-        valread = read(sock, &max, 4);
-        if (valread<0){ perror("ERROR reading from socket");}   
-        //printf("max: %s File size is...%s vs %s\n", digits_max, z, max);
-        if (strlen(z) > atoi(digits_max) || atoi(z) >atoi(max))
+        if (strlen(z) > atoi(digits_max))// || atoi(z) >atoi(max))
         {
             tmp[0]='\x4';
             valwrite = write(sock, &tmp, 1);
@@ -120,7 +116,6 @@ int main(int argc, char const *argv[])
     {
         tmp[0]='\x4';
         valwrite = write(sock, &tmp, 1);
-       // printf("File is incompatible\n");
         printf("Format error");
         return 0;
     }
@@ -129,7 +124,6 @@ int main(int argc, char const *argv[])
     tmp[0]='\0';
     memset(tmp,0,sizeof(tmp));
     fp = fopen(argv[3], "r");
-    //printf("Opened file");
     while(1) 
     { 
         tmp[0] = fgetc(fp);

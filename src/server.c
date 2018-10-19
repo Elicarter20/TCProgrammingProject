@@ -87,11 +87,9 @@ int main(int argc, char const *argv[])
         valwrite = write(new_socket, &ack, 1);
         if (valwrite < 0) perror("ERROR writing to socket"); 
 
-       //SEND SIZE of CONTENTS
+
         char num_digits_size[2] = "4";
         send(new_socket, num_digits_size, strlen(num_digits_size), 0); // send client-server primer
-        char max_size[4] = "1024";
-        send(new_socket, max_size, strlen(max_size), 0); // send client-server primer
         int sw = 0;
         while(1)
         {
